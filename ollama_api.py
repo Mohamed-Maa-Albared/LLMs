@@ -8,7 +8,10 @@ class OllamaAPI:
         self.base_url = base_url  # Print error message if command fails
 
     def generate_response(
-        self, prompt, model="llama3", headers={"Content-Type": "application/json"}
+        self,
+        prompt,
+        model="dolphin-mixtral",
+        headers={"Content-Type": "application/json"},
     ):
         data = {"model": model, "prompt": prompt, "stream": True}  # Enable streaming
         response = requests.post(

@@ -16,7 +16,7 @@ def generate_response():
         # Get JSON data from the request
         data = request.get_json()
         prompt = data.get("prompt")
-        model = data.get("model", "llama3")
+        model = data.get("model", "dolphin-mixtral")
 
         # Check if prompt is provided
         if not prompt:
