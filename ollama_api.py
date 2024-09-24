@@ -5,7 +5,7 @@ import requests
 
 class OllamaAPI:
     def __init__(self, base_url="http://localhost:11434/api/generate"):
-        self.base_url = base_url
+        self.base_url = base_url  # Print error message if command fails
 
     def generate_response(
         self, prompt, model="llama3", headers={"Content-Type": "application/json"}
