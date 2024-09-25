@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mo's Personal Assistant</title>
+    
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS File -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Anime.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Marked.js Library for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h2>Conversations</h2>
+            <button id="dark-mode-toggle">Dark Mode</button>
+            <button id="new-conversation-btn">New Conversation</button>
+            <ul id="conversation-list"></ul>
+        </div>
+        <div class="right-panel">
+            <h1>Mo's Personal Assistant</h1>
+            <label for="include-history">
+                <input type="checkbox" id="include-history" checked>
+                Include conversation history
+            </label>
+            <ul id="conversation-history"></ul>
+            <form id="prompt-form">
+                <input type="text" id="prompt" name="prompt" placeholder="Ask LLaMA something..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript File -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

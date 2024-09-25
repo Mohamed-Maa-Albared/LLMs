@@ -1,15 +1,17 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory
 
 import ollama_api
 
 app = Flask(__name__)
 
 
+# Serve the homepage from the templates folder
 @app.route("/")
 def home():
-    return send_from_directory(".", "index.html")
+    return render_template("index.html")
 
 
+# API route to generate responses
 @app.route("/api/generate", methods=["POST"])
 def generate_response():
     try:
@@ -22,11 +24,8 @@ def generate_response():
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
 
-        # Prepare headers
-        headers = {"Content-Type": "application/json"}
-
         # Call the Ollama API to generate a response
-        response = ollama_api.OllamaAPI().generate_response(prompt, model, headers)
+        response = ollama_api.OllamaAPI().generate_response(prompt, model)
 
         # Check if response is valid
         if response is None:
@@ -37,6 +36,12 @@ def generate_response():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Serve static files such as CSS and JavaScript
+@app.route("/static/<path:path>")
+def serve_static_files(path):
+    return send_from_directory("static", path)
 
 
 if __name__ == "__main__":
