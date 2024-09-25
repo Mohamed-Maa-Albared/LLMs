@@ -21,7 +21,7 @@
     <div class="container">
         <div class="left-panel">
             <h2>Conversations</h2>
-            <button id="dark-mode-toggle">Dark Mode</button>
+             <!--<button id="dark-mode-toggle">Dark Mode</button> -->
             <button id="new-conversation-btn">New Conversation</button>
             <ul id="conversation-list"></ul>
         </div>
@@ -33,9 +33,17 @@
             </label>
             <ul id="conversation-history"></ul>
             <form id="prompt-form">
-                <input type="text" id="prompt" name="prompt" placeholder="Ask LLaMA something..." required>
+                <textarea id="prompt" name="prompt" placeholder="Ask LLaMA something..." required></textarea>
                 <button type="submit">Send</button>
             </form>
+            <!-- Settings Shelf -->
+            <div id="settings-shelf">
+                <img src="static/settings.png" id="settings-icon" alt="Settings">
+                <div id="settings-content">
+                    <button id="dark-mode-toggle">Dark Mode</button>
+                </div>
+            </div>
+
         </div>
     </div>
 

@@ -3,6 +3,9 @@ const conversationHistory = document.getElementById("conversation-history");
 const conversationList = document.getElementById("conversation-list");
 const newConversationBtn = document.getElementById("new-conversation-btn");
 const darkModeToggle = document.getElementById("dark-mode-toggle");
+const settingsShelf = document.getElementById("settings-shelf");
+const settingsIcon = document.getElementById("settings-icon");
+
 let isTyping = false;
 let conversations = [];
 let currentConversationId = null;
@@ -30,6 +33,7 @@ darkModeToggle.addEventListener('click', () => {
     }
 });
 
+
 function startNewConversation() {
     const newConversation = {
         id: Date.now(),
@@ -40,6 +44,7 @@ function startNewConversation() {
     currentConversationId = newConversation.id;
     updateConversationList();
     clearConversationHistory();
+    saveConversationsToLocalStorage();  // Save to localStorage
 }
 
 function updateConversationList() {
@@ -73,6 +78,7 @@ function deleteConversation(id) {
             clearConversationHistory();
         }
         updateConversationList();
+        saveConversationsToLocalStorage();  // Save after deletion
     }
 }
 
@@ -213,6 +219,10 @@ function sanitizeHTML(str) {
 function formatResponseText(text) {
     return marked.parse(text);
 }
+
+settingsIcon.addEventListener("click", () => {
+    settingsShelf.classList.toggle("open");
+});
 
 // Start with a new conversation
 startNewConversation();
