@@ -19,7 +19,6 @@ def generate_response():
         data = request.get_json()
         prompt = data.get("prompt")
         model = data.get("model", "dolphin-mixtral")
-
         # Check if prompt is provided
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400

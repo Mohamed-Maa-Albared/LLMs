@@ -12,3 +12,11 @@ response = ollama.generate(model='llama3.1',
                            prompt='What is a qubit?')
 
 print(response['response'])
+
+""""
+from langchain_community.llms import Ollama
+
+llm = Ollama(model="llama2")
+response = llm.invoke("Explain partial functions in Python")
+print(response)
+"""

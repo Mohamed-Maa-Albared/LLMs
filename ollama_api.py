@@ -5,15 +5,25 @@ import requests
 
 class OllamaAPI:
     def __init__(self, base_url="http://localhost:11434/api/generate"):
-        self.base_url = base_url  # Print error message if command fails
+        self.base_url = base_url
 
     def generate_response(
         self,
         prompt,
         model="dolphin-mixtral",
+        temperature=0.7,  # Default temperature
+        max_tokens=100,  # Default max tokens (example parameter)
         headers={"Content-Type": "application/json"},
     ):
-        data = {"model": model, "prompt": prompt, "stream": True}  # Enable streaming
+        # Create data dictionary with additional parameters
+        data = {
+            "model": model,
+            "prompt": prompt,
+            "temperature": temperature,  # Include temperature
+            "max_tokens": max_tokens,  # Include max_tokens
+            "stream": True,  # Enable streaming
+        }
+
         response = requests.post(
             self.base_url, headers=headers, data=json.dumps(data), stream=True
         )
