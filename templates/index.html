@@ -27,10 +27,22 @@
         </div>
         <div class="right-panel">
             <h1>Mo's Personal Assistant</h1>
-            <label for="include-history">
-                <input type="checkbox" id="include-history" checked>
-                Include conversation history
-            </label>
+                <div class="model-selector">
+                    <label for="model-select">Select Model:</label>
+                    <select id="model-select">
+                        <option value="gpt-3.5">GPT-3.5</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="claude-2">Claude 2</option>
+                    </select>
+                </div>
+                
+            <div class="checkbox-container">
+                <label for="include-history">
+                    <input type="checkbox" id="include-history" checked>
+                    Include conversation history
+                </label>
+            </div>
+            
             <ul id="conversation-history"></ul>
             <form id="prompt-form">
                 <textarea id="prompt" name="prompt" placeholder="Ask LLaMA something..." required></textarea>
@@ -38,9 +50,18 @@
             </form>
             <!-- Settings Shelf -->
             <div id="settings-shelf">
-                <img src="static/settings.png" id="settings-icon" alt="Settings">
+                <img src="static/settings.png" alt="Settings" id="settings-icon">
                 <div id="settings-content">
+                    <h2>Settings</h2>
                     <button id="dark-mode-toggle">Dark Mode</button>
+                    <div class="mode-slider">
+                        <span>Precise</span>
+                        <label class="switch">
+                            <input type="checkbox" id="mode-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span>Creative</span>
+                    </div>
                 </div>
             </div>
 

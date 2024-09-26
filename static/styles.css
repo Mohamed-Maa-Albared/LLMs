@@ -55,6 +55,11 @@ body {
     flex-direction: column;
     height: 100%;
     box-sizing: border-box;
+    padding-top: 20px;
+}
+
+.right-panel h1 {
+    margin-bottom: 20px;
 }
 
 h1, h2 {
@@ -91,6 +96,12 @@ h1, h2 {
 #conversation-list li:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px var(--shadow-color);
+}
+/* Style the entire checkbox container to move both the label and checkbox */
+.checkbox-container {
+    margin-bottom: 0px; /* Adjust to your preference */
+    display: flex;
+    margin-top: 10px;
 }
 
 #conversation-history {
@@ -315,7 +326,9 @@ button:hover {
     cursor: pointer;
 }
 
-/* Settings shelf */
+/* ... (previous CSS remains unchanged) ... */
+
+/* Updated Settings shelf styles */
 #settings-shelf {
     position: fixed;
     top: 50px;
@@ -333,15 +346,15 @@ button:hover {
     height: 50px;
     cursor: pointer;
     margin-bottom: 40px;
-
+    transition: all 0.3s ease;
 }
 
 #settings-content {
     position: absolute;
     top: 0;
-    right: -400px; /* Initially hidden */
+    right: -300px; /* Initially hidden */
     width: 250px;
-    height: 100%;
+    height: auto;
     background-color: var(--bg-color);
     border-radius: 15px 0 0 15px;
     box-shadow: 0 5px 15px var(--shadow-color);
@@ -358,33 +371,94 @@ button:hover {
 }
 
 #settings-content h2 {
-    margin: 0;
+    margin: 0 0 20px 0;
     font-size: 20px;
     color: var(--primary-color);
     font-weight: 700;
 }
 
-#settings-content button {
-    margin-top: 20px;
+/* Dark mode toggle button */
+#dark-mode-toggle {
     width: 100%;
-    border-radius: 15px;
-    padding: 10px 20px;
+    margin-bottom: 20px;
+    padding: 10px;
     font-size: 16px;
     font-weight: 600;
     background-color: var(--primary-color);
     color: white;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-#settings-content button:hover {
+#dark-mode-toggle:hover {
     opacity: 0.9;
     transform: translateY(-2px);
 }
 
+/* Mode slider styles */
+.mode-slider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.mode-slider span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--secondary-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--bg-color);
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
 #settings-shelf.open #settings-icon {
-    transform: rotate(90deg); /* Rotate the icon to indicate open state */
+    transform: rotate(90deg);
 }
 
 #settings-shelf:hover #settings-icon {
@@ -395,3 +469,103 @@ button:hover {
 #settings-shelf.open {
     transition: all 0.3s ease-in-out;
 }
+
+/* ... (rest of the CSS remains unchanged) ... */
+
+/* ... (previous CSS remains unchanged) ... */
+
+/* New styles for model selector and mode slider */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.model-selector {
+    display: flex;
+    align-items: center;
+}
+
+.model-selector label {
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+#model-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#model-select:hover {
+    background-color: var(--secondary-color);
+}
+
+.mode-slider {
+    display: flex;
+    align-items: center;
+}
+
+.mode-slider span {
+    margin: 0 10px;
+    font-weight: 600;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--secondary-color);
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--bg-color);
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+
