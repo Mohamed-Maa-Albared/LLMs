@@ -12,6 +12,7 @@ let isTyping = false;
 let conversations = [];
 let currentConversationId = null;
 let temperature = 0.7; 
+let abortController = null;
 
 // Load conversations from localStorage
 function loadConversationsFromLocalStorage() {
@@ -133,15 +134,37 @@ function updateConversationList() {
                 <button class="delete-btn">Delete</button>
             </div>
         `;
-        li.querySelector('.conversation-name').addEventListener('input', (e) => {
+        const nameSpan = li.querySelector('.conversation-name');
+        
+        //nameSpan.addEventListener('focus', () => {
+            // If there's an ongoing text generation, abort it
+        //    if (abortController) {
+        //        abortController.abort();
+        //    }
+        //});
+
+        nameSpan.addEventListener('blur', (e) => {
             e.stopPropagation();
             conv.name = e.target.textContent;
+            saveConversationsToLocalStorage();
         });
+
+        nameSpan.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                nameSpan.blur();
+            }
+        });
+
         li.querySelector('.delete-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             deleteConversation(conv.id);
         });
-        li.addEventListener("click", () => loadConversation(conv.id));
+        li.addEventListener("click", (e) => {
+            if (e.target !== nameSpan) {
+                loadConversation(conv.id);
+            }
+        });
         conversationList.appendChild(li);
     });
 }
@@ -201,7 +224,7 @@ form.addEventListener("submit", async (e) => {
     // Create the payload, including the selected model
     const payload = {
         prompt: promptToSend,
-        model: selectedModel, // Add the selected model to the payload
+        model: selectedModel,
         temperature: temperature
     };
 
@@ -226,13 +249,17 @@ form.addEventListener("submit", async (e) => {
 
     isTyping = true;
 
+    // Create a new AbortController
+    abortController = new AbortController();
+
     try {
         const response = await fetch("/api/generate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(payload)  // Send the prompt and model to the backend
+            body: JSON.stringify(payload),
+            signal: abortController.signal
         });
 
         if (!response.ok) {
@@ -250,20 +277,30 @@ form.addEventListener("submit", async (e) => {
         for (let i = 0; i < sanitizedResponse.length; i++) {
             formattedResponse += sanitizedResponse[i];
             messageContent.innerHTML = formatResponseText(formattedResponse);
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            
+            // Check if the request has been aborted
+            if (abortController.signal.aborted) {
+                throw new DOMException('Aborted', 'AbortError');
+            }
         }
 
         if (currentConversationId) {
             const conversation = conversations.find(conv => conv.id === currentConversationId);
             conversation.messages.push({ speaker: "LLaMA", content: sanitizedResponse });
-            saveConversationsToLocalStorage()
+            saveConversationsToLocalStorage();
         }
 
-        isTyping = false;
     } catch (error) {
-        messageContent.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
-        console.error("Error:", error);
+        if (error.name === 'AbortError') {
+            console.log('Fetch aborted');
+        } else {
+            messageContent.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
+            console.error("Error:", error);
+        }
+    } finally {
         isTyping = false;
+        abortController = null;
     }
 });
 
