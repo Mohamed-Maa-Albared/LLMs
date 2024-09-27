@@ -10,7 +10,7 @@
     - [API Endpoints](#api-endpoints)
   - [GET /api/models](#get-apimodels)
     - [Endpoint: /api/models](#endpoint-apimodels)
-  - [POST /api/generate](#post-apigenerate)
+  - [POST /api/generateo](#post-apigenerateo)
     - [Request Body:](#request-body)
   - [Method: POST](#method-post)
     - [Endpoint: /api/generate](#endpoint-apigenerate)
@@ -28,7 +28,7 @@ Fetches available models from the Ollama API.
 
 ### Endpoint: /api/models
 
-## POST /api/generate
+## POST /api/generateo
 Generates a response based on a prompt and model.
 
 ### Request Body:

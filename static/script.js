@@ -142,6 +142,20 @@ function updateConversationList() {
         const nameSpan = li.querySelector('.conversation-name');
         const deleteBtn = li.querySelector('.delete-btn');
 
+        // Add click event to load the conversation when the list item is clicked
+        li.addEventListener('click', () => {
+            loadConversation(conv.id);
+        });
+
+        // Prevent the conversation from loading when clicking on editable name or delete button
+        nameSpan.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteConversation(conv.id, li);
+        });
+
         // Update the conversation name when editing finishes (blur)
         nameSpan.addEventListener('blur', (e) => {
             e.stopPropagation();
@@ -155,12 +169,6 @@ function updateConversationList() {
                 e.preventDefault();
                 nameSpan.blur();  // Exit the contenteditable mode
             }
-        });
-
-        // Attach the delete button event to trigger the custom pop-up
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteConversation(conv.id, li);  // Pass the conversation id and element for positioning
         });
 
         // Add the list item to the conversation list
