@@ -16,7 +16,6 @@ def home():
 def get_models():
     try:
         models = ollama_api.OllamaAPI().list_ollama_models()
-        print(models)  # Call the list_ollama_models function
         return jsonify(models)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -30,12 +29,13 @@ def generate_response():
         data = request.get_json()
         prompt = data.get("prompt")
         model = data.get("model", "dolphin-mixtral")
+        temperature = data.get("temperature", 0.7)
         # Check if prompt is provided
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
 
         # Call the Ollama API to generate a response
-        response = ollama_api.OllamaAPI().generate_response(prompt, model)
+        response = ollama_api.OllamaAPI().generate_response(prompt, model, temperature)
 
         # Check if response is valid
         if response is None:

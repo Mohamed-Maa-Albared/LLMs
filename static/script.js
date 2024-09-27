@@ -5,40 +5,69 @@ const newConversationBtn = document.getElementById("new-conversation-btn");
 const darkModeToggle = document.getElementById("dark-mode-toggle");
 const settingsShelf = document.getElementById("settings-shelf");
 const settingsIcon = document.getElementById("settings-icon");
-const modelSelect = document.getElementById("model-select"); // Model selector dropdown
+const modelSelect = document.getElementById("model-select"); 
+const modeToggle = document.getElementById("mode-toggle");
 
 let isTyping = false;
 let conversations = [];
 let currentConversationId = null;
+let temperature = 0.7; 
+
+// Load conversations from localStorage
+function loadConversationsFromLocalStorage() {
+    const savedConversations = localStorage.getItem('conversations');
+    if (savedConversations) {
+        conversations = JSON.parse(savedConversations);
+        updateConversationList();
+    }
+}
+
+// Save conversations to localStorage
+function saveConversationsToLocalStorage() {
+    localStorage.setItem('conversations', JSON.stringify(conversations));
+}
 
 newConversationBtn.addEventListener("click", startNewConversation);
 
 document.addEventListener("DOMContentLoaded", function () {
+    loadConversationsFromLocalStorage(); // Load conversations when the page loads
+
+    if (conversations.length === 0) {
+        startNewConversation();
+    } else {
+        // Load the most recent conversation
+        const mostRecentConversation = conversations[conversations.length - 1];
+        if (mostRecentConversation) {
+            loadConversation(mostRecentConversation.id);
+        } else {
+            startNewConversation();
+        }
+    }
+
     const modelSelect = document.getElementById("model-select");
 
     if (!modelSelect) {
+        console.error("Model select element not found");
         return;
     }
 
     // Fetch models from the API
     fetch("/api/models")
         .then(response => {
-            console.log("Response status:", response.status);  // Log the response status
+            console.log("Response status:", response.status);
             if (!response.ok) {
                 throw new Error("Failed to fetch models");
             }
             return response.json();
         })
         .then(models => {
-            console.log("Models fetched:", models);  // Log the fetched models
+            console.log("Models fetched:", models);
 
-            // Check if models are empty
             if (models.length === 0) {
                 console.error("No models available");
                 return;
             }
 
-            // Populate the dropdown with the models
             models.forEach(model => {
                 const option = document.createElement("option");
                 option.value = model.name;
@@ -47,6 +76,17 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         })
         .catch(error => console.error("Error fetching models:", error));
+});
+
+// Listen for changes to the mode toggle
+modeToggle.addEventListener("change", function() {
+    if (this.checked) {
+        temperature = 1;  // Set to Creative temperature
+        console.log("Temperature set to Creative:", temperature);
+    } else {
+        temperature = 0.7;  // Set to Precise temperature
+        console.log("Temperature set to Precise:", temperature);
+    }
 });
 
 // Dark mode toggle functionality
@@ -135,10 +175,14 @@ form.addEventListener("submit", async (e) => {
 
     const promptInput = document.getElementById("prompt");
     const prompt = promptInput.value.trim();
-    const selectedModel = modelSelect.value;  // Get the selected model
+    const selectedModel = modelSelect.value;
     promptInput.value = "";
 
     if (prompt === "") return;
+
+    if (!currentConversationId) {
+        startNewConversation();
+    }
 
     addToConversationHistory("You", prompt);
 
@@ -157,7 +201,8 @@ form.addEventListener("submit", async (e) => {
     // Create the payload, including the selected model
     const payload = {
         prompt: promptToSend,
-        model: selectedModel  // Add the selected model to the payload
+        model: selectedModel, // Add the selected model to the payload
+        temperature: temperature
     };
 
     const responseLi = document.createElement("li");
@@ -211,6 +256,7 @@ form.addEventListener("submit", async (e) => {
         if (currentConversationId) {
             const conversation = conversations.find(conv => conv.id === currentConversationId);
             conversation.messages.push({ speaker: "LLaMA", content: sanitizedResponse });
+            saveConversationsToLocalStorage()
         }
 
         isTyping = false;
@@ -221,7 +267,7 @@ form.addEventListener("submit", async (e) => {
     }
 });
 
-function addToConversationHistory(speaker, content) {
+function addToConversationHistory(speaker, content, saveToStorage = true) {
     const li = document.createElement("li");
     li.classList.add("fade-in");
     li.innerHTML = `
@@ -241,9 +287,26 @@ function addToConversationHistory(speaker, content) {
     li.classList.add("show");
     conversationHistory.scrollTop = conversationHistory.scrollHeight;
 
-    if (currentConversationId) {
+    if (currentConversationId && saveToStorage) {
         const conversation = conversations.find(conv => conv.id === currentConversationId);
-        conversation.messages.push({ speaker, content });
+        if (conversation) {
+            conversation.messages.push({ speaker, content });
+            saveConversationsToLocalStorage();
+        } else {
+            console.error(`Conversation with id ${currentConversationId} not found`);
+            startNewConversation();
+        }
+    }
+}
+function loadConversation(id) {
+    currentConversationId = id;
+    clearConversationHistory();
+    const conversation = conversations.find(conv => conv.id === id);
+    if (conversation) {
+        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, false));
+    } else {
+        console.error(`Conversation with id ${id} not found`);
+        startNewConversation();
     }
 }
 
