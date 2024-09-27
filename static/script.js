@@ -5,12 +5,49 @@ const newConversationBtn = document.getElementById("new-conversation-btn");
 const darkModeToggle = document.getElementById("dark-mode-toggle");
 const settingsShelf = document.getElementById("settings-shelf");
 const settingsIcon = document.getElementById("settings-icon");
+const modelSelect = document.getElementById("model-select"); // Model selector dropdown
 
 let isTyping = false;
 let conversations = [];
 let currentConversationId = null;
 
 newConversationBtn.addEventListener("click", startNewConversation);
+
+document.addEventListener("DOMContentLoaded", function () {
+    const modelSelect = document.getElementById("model-select");
+
+    if (!modelSelect) {
+        return;
+    }
+
+    // Fetch models from the API
+    fetch("/api/models")
+        .then(response => {
+            console.log("Response status:", response.status);  // Log the response status
+            if (!response.ok) {
+                throw new Error("Failed to fetch models");
+            }
+            return response.json();
+        })
+        .then(models => {
+            console.log("Models fetched:", models);  // Log the fetched models
+
+            // Check if models are empty
+            if (models.length === 0) {
+                console.error("No models available");
+                return;
+            }
+
+            // Populate the dropdown with the models
+            models.forEach(model => {
+                const option = document.createElement("option");
+                option.value = model.name;
+                option.textContent = model.name;
+                modelSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching models:", error));
+});
 
 // Dark mode toggle functionality
 if (localStorage.getItem('dark-mode') === 'enabled') {
@@ -33,7 +70,6 @@ darkModeToggle.addEventListener('click', () => {
     }
 });
 
-
 function startNewConversation() {
     const newConversation = {
         id: Date.now(),
@@ -44,7 +80,7 @@ function startNewConversation() {
     currentConversationId = newConversation.id;
     updateConversationList();
     clearConversationHistory();
-    saveConversationsToLocalStorage();  // Save to localStorage
+    
 }
 
 function updateConversationList() {
@@ -99,6 +135,7 @@ form.addEventListener("submit", async (e) => {
 
     const promptInput = document.getElementById("prompt");
     const prompt = promptInput.value.trim();
+    const selectedModel = modelSelect.value;  // Get the selected model
     promptInput.value = "";
 
     if (prompt === "") return;
@@ -112,15 +149,15 @@ form.addEventListener("submit", async (e) => {
     let promptToSend;
     if (includeHistory && currentConversationId) {
         const conversation = conversations.find(conv => conv.id === currentConversationId);
-        // Build the conversation history as a single string
         promptToSend = conversation.messages.map(msg => `${msg.speaker}: ${msg.content}`).join('\n');
     } else {
         promptToSend = `You: ${prompt}`;
     }
 
-    // Create the payload
+    // Create the payload, including the selected model
     const payload = {
-        prompt: promptToSend
+        prompt: promptToSend,
+        model: selectedModel  // Add the selected model to the payload
     };
 
     const responseLi = document.createElement("li");
@@ -150,7 +187,7 @@ form.addEventListener("submit", async (e) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload)  // Send the prompt and model to the backend
         });
 
         if (!response.ok) {

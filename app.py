@@ -11,6 +11,17 @@ def home():
     return render_template("index.html")
 
 
+# API route to fetch available models
+@app.route("/api/models", methods=["GET"])
+def get_models():
+    try:
+        models = ollama_api.OllamaAPI().list_ollama_models()
+        print(models)  # Call the list_ollama_models function
+        return jsonify(models)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # API route to generate responses
 @app.route("/api/generate", methods=["POST"])
 def generate_response():
