@@ -1,7 +1,11 @@
 **Ollama API App**
 =====================================
 
+**Table of Contents**
+-------------------
+
 - [**Ollama API App**](#ollama-api-app)
+  - [**Table of Contents**](#table-of-contents)
   - [Introduction](#introduction)
     - [API Endpoints](#api-endpoints)
   - [GET /api/models](#get-apimodels)
