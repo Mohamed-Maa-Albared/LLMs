@@ -7,12 +7,16 @@ const settingsShelf = document.getElementById("settings-shelf");
 const settingsIcon = document.getElementById("settings-icon");
 const modelSelect = document.getElementById("model-select"); 
 const modeToggle = document.getElementById("mode-toggle");
+const deletePopup = document.getElementById("delete-popup");
+const cancelPopupBtn = document.getElementById("cancel-popup");
+const confirmPopupBtn = document.getElementById("confirm-popup");
 
 let isTyping = false;
 let conversations = [];
 let currentConversationId = null;
 let temperature = 0.7; 
 let abortController = null;
+let conversationToDelete = null;
 
 // Load conversations from localStorage
 function loadConversationsFromLocalStorage() {
@@ -134,52 +138,40 @@ function updateConversationList() {
                 <button class="delete-btn">Delete</button>
             </div>
         `;
-        const nameSpan = li.querySelector('.conversation-name');
         
-        //nameSpan.addEventListener('focus', () => {
-            // If there's an ongoing text generation, abort it
-        //    if (abortController) {
-        //        abortController.abort();
-        //    }
-        //});
+        const nameSpan = li.querySelector('.conversation-name');
+        const deleteBtn = li.querySelector('.delete-btn');
 
+        // Update the conversation name when editing finishes (blur)
         nameSpan.addEventListener('blur', (e) => {
             e.stopPropagation();
             conv.name = e.target.textContent;
-            saveConversationsToLocalStorage();
+            saveConversationsToLocalStorage();  // Save name changes
         });
 
+        // Save the name and exit editing mode on 'Enter' key press
         nameSpan.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                nameSpan.blur();
+                nameSpan.blur();  // Exit the contenteditable mode
             }
         });
 
-        li.querySelector('.delete-btn').addEventListener('click', (e) => {
+        // Attach the delete button event to trigger the custom pop-up
+        deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            deleteConversation(conv.id);
+            deleteConversation(conv.id, li);  // Pass the conversation id and element for positioning
         });
-        li.addEventListener("click", (e) => {
-            if (e.target !== nameSpan) {
-                loadConversation(conv.id);
-            }
-        });
+
+        // Add the list item to the conversation list
         conversationList.appendChild(li);
     });
 }
 
-function deleteConversation(id) {
-    if (confirm("Are you sure you want to delete this conversation?")) {
-        conversations = conversations.filter(conv => conv.id !== id);
-        if (currentConversationId === id) {
-            currentConversationId = null;
-            clearConversationHistory();
-        }
-        updateConversationList();
-        saveConversationsToLocalStorage();  // Save after deletion
-    }
+function deleteConversation(id, element) {
+    openDeletePopup(id, element);  // Open the custom delete pop-up near the conversation element
 }
+
 
 function loadConversation(id) {
     currentConversationId = id;
@@ -359,6 +351,48 @@ function formatResponseText(text) {
 
 settingsIcon.addEventListener("click", () => {
     settingsShelf.classList.toggle("open");
+});
+
+function openDeletePopup(id, element) {
+    conversationToDelete = id;
+
+    // Position the pop-up near the clicked conversation
+    const rect = element.getBoundingClientRect();
+    deletePopup.style.top = `${rect.top + window.scrollY}px`;
+    deletePopup.style.left = `${rect.left + rect.width / 2 - 100}px`;  // Center the pop-up
+    deletePopup.style.display = "block";
+
+    // Add the blur class to the conversation list
+    conversationList.classList.add('blur');
+
+    // Add transition class to animate the pop-up
+    setTimeout(() => deletePopup.classList.add("show"), 10);
+}
+
+function closeDeletePopup() {
+    deletePopup.classList.remove("show");
+    setTimeout(() => {
+        deletePopup.style.display = "none";  // Hide the pop-up after animation
+        conversationList.classList.remove('blur');  // Remove blur effect
+    }, 300);
+}
+
+// Attach event listeners to buttons in the pop-up
+cancelPopupBtn.addEventListener("click", closeDeletePopup);
+
+confirmPopupBtn.addEventListener("click", function() {
+    if (conversationToDelete) {
+        // Perform deletion of the conversation
+        conversations = conversations.filter(conv => conv.id !== conversationToDelete);
+        if (currentConversationId === conversationToDelete) {
+            currentConversationId = null;
+            clearConversationHistory();
+        }
+        updateConversationList();
+        saveConversationsToLocalStorage();  // Save after deletion
+
+        closeDeletePopup();  // Close the pop-up after deletion
+    }
 });
 
 // Start with a new conversation

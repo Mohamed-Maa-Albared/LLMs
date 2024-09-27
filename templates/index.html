@@ -23,6 +23,13 @@
             <h2>Conversations</h2>
             <button id="new-conversation-btn">New Conversation</button>
             <ul id="conversation-list"></ul>
+            <div id="delete-popup" class="popup">
+                <p>Delete this conversation?</p>
+                <div class="popup-actions">
+                    <button id="cancel-popup" class="popup-button cancel">Cancel</button>
+                    <button id="confirm-popup" class="popup-button danger">Delete</button>
+                </div>
+            </div>
         </div>
         <div class="right-panel">
             <h1>Mo's Personal Assistant</h1>
@@ -64,6 +71,7 @@
             </div>
         </div>
     </div>
+    
 
     <!-- JavaScript File -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
