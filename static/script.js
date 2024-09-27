@@ -10,6 +10,7 @@ const modeToggle = document.getElementById("mode-toggle");
 const deletePopup = document.getElementById("delete-popup");
 const cancelPopupBtn = document.getElementById("cancel-popup");
 const confirmPopupBtn = document.getElementById("confirm-popup");
+const promptInput = document.getElementById("prompt");
 
 let isTyping = false;
 let conversations = [];
@@ -185,7 +186,7 @@ function loadConversation(id) {
     currentConversationId = id;
     clearConversationHistory();
     const conversation = conversations.find(conv => conv.id === id);
-    conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content));
+    conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime));
 }
 
 function clearConversationHistory() {
@@ -212,11 +213,13 @@ form.addEventListener("submit", async (e) => {
     // Get the toggle value
     const includeHistory = document.getElementById("include-history").checked;
 
-    // Prepare the prompt to send
+    // Prepare the prompt to send (excluding response time)
     let promptToSend;
     if (includeHistory && currentConversationId) {
         const conversation = conversations.find(conv => conv.id === currentConversationId);
-        promptToSend = conversation.messages.map(msg => `${msg.speaker}: ${msg.content}`).join('\n');
+        promptToSend = conversation.messages
+            .filter(msg => msg.speaker !== "Response Time")  // Exclude time message
+            .map(msg => `${msg.speaker}: ${msg.content}`).join('\n');  // Only content gets included
     } else {
         promptToSend = `You: ${prompt}`;
     }
@@ -228,7 +231,10 @@ form.addEventListener("submit", async (e) => {
         temperature: temperature
     };
 
+    console.log("payload:", payload);
+
     const responseLi = document.createElement("li");
+    responseLi.style.position = "relative"; // Ensure relative positioning for the time message
     responseLi.innerHTML = `
         <div class="message-header">
             <strong>LLaMA:</strong>
@@ -251,6 +257,9 @@ form.addEventListener("submit", async (e) => {
 
     // Create a new AbortController
     abortController = new AbortController();
+
+    // Start timer to calculate the response time
+    const startTime = performance.now();
 
     try {
         const response = await fetch("/api/generate", {
@@ -285,9 +294,24 @@ form.addEventListener("submit", async (e) => {
             }
         }
 
+        // Stop the timer after the response is fully generated
+        const endTime = performance.now();
+        const duration = (endTime - startTime) / 1000;  // Convert milliseconds to seconds
+
+        // Append the time message to the response
+        const timeMessage = document.createElement("small");
+        timeMessage.classList.add("response-time");  // Add class for styling
+        timeMessage.textContent = `${duration.toFixed(2)}s`;
+        responseLi.appendChild(timeMessage);
+
+        // Save the response to the conversation history, including the time
         if (currentConversationId) {
             const conversation = conversations.find(conv => conv.id === currentConversationId);
-            conversation.messages.push({ speaker: "LLaMA", content: sanitizedResponse });
+            conversation.messages.push({
+                speaker: "LLaMA",
+                content: sanitizedResponse,
+                responseTime: duration.toFixed(2)  // Store the time
+            });
             saveConversationsToLocalStorage();
         }
 
@@ -304,9 +328,11 @@ form.addEventListener("submit", async (e) => {
     }
 });
 
-function addToConversationHistory(speaker, content, saveToStorage = true) {
+function addToConversationHistory(speaker, content, responseTime, saveToStorage = true) {
     const li = document.createElement("li");
     li.classList.add("fade-in");
+    
+    // Main message content
     li.innerHTML = `
         <div class="message-header">
             <strong>${speaker}:</strong>
@@ -314,20 +340,46 @@ function addToConversationHistory(speaker, content, saveToStorage = true) {
         </div>
         <div class="message-content">${formatResponseText(sanitizeHTML(content))}</div>
     `;
+
+    // Conditionally add the response time if it exists
+    if (responseTime != undefined) {
+        const timeMessage = document.createElement("small");
+        timeMessage.classList.add("response-time");
+        timeMessage.textContent = `${responseTime}s`;
+        li.appendChild(timeMessage);  // Append the time only if it exists
+    }
+
+    // Add the collapse functionality
     const collapseBtn = li.querySelector('.collapse-btn');
     const messageContent = li.querySelector('.message-content');
     collapseBtn.addEventListener('click', function() {
         messageContent.classList.toggle('collapsed');
+        
+        // Toggle the collapse button text
         this.textContent = messageContent.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+        
+        // Toggle the visibility of the response time
+        const timeMessage = li.querySelector('.response-time'); // Get the response time element
+        if (timeMessage) {
+            timeMessage.style.display = messageContent.classList.contains('collapsed') ? 'none' : 'block';
+        }
     });
+
+    // Add the message to the conversation history and scroll to the bottom
     conversationHistory.appendChild(li);
     li.classList.add("show");
     conversationHistory.scrollTop = conversationHistory.scrollHeight;
 
+    // Save the conversation to local storage if necessary
     if (currentConversationId && saveToStorage) {
         const conversation = conversations.find(conv => conv.id === currentConversationId);
         if (conversation) {
-            conversation.messages.push({ speaker, content });
+            // Save the message with or without response time
+            conversation.messages.push({
+                speaker, 
+                content, 
+                responseTime: responseTime || undefined // Save time if it exists, else undefined
+            });
             saveConversationsToLocalStorage();
         } else {
             console.error(`Conversation with id ${currentConversationId} not found`);
@@ -340,7 +392,7 @@ function loadConversation(id) {
     clearConversationHistory();
     const conversation = conversations.find(conv => conv.id === id);
     if (conversation) {
-        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, false));
+        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime, false));
     } else {
         console.error(`Conversation with id ${id} not found`);
         startNewConversation();
@@ -400,6 +452,14 @@ confirmPopupBtn.addEventListener("click", function() {
         saveConversationsToLocalStorage();  // Save after deletion
 
         closeDeletePopup();  // Close the pop-up after deletion
+    }
+});
+
+// Listen for "Enter" key press on the prompt input
+promptInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();  // Prevent the default behavior (new line)
+        form.dispatchEvent(new Event("submit"));  // Trigger form submission
     }
 });
 

@@ -636,3 +636,13 @@ input:checked + .slider:before {
     filter: blur(5px);
     transition: filter 0.3s ease;  /* Smooth transition for blurring */
 }
+.response-time {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 0.7rem; /* Add some space between the element and the border */
+    font-size: 0.75rem;
+    color: gray;
+    box-sizing: border-box; /* Include padding and border in the width/height calculation */
+}
+
