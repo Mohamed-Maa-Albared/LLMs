@@ -1,3 +1,82 @@
+// Conversation class to encapsulate conversation-specific state and methods
+class Conversation {
+    constructor(id, name) {
+        this.id = id;
+        this.name = name;
+        this.messages = [];
+        this.isGenerating = false;
+        this.abortController = null;
+        this.currentResponse = '';
+    }
+
+    async generateResponse(prompt, model, temperature) {
+        if (this.isGenerating) {
+            console.log('Already generating a response for this conversation');
+            return;
+        }
+
+        this.isGenerating = true;
+        this.startTime = Date.now()
+        this.abortController = new AbortController();
+
+        const payload = {
+            prompt: prompt,
+            model: model,
+            temperature: temperature
+        };
+
+        try {
+            const response = await fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload),
+                signal: this.abortController.signal
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || "Failed to generate response");
+            }
+
+            const data = await response.json();
+            let generatedResponse = data.response.replace(/\+/g, '');
+            const sanitizedResponse = sanitizeHTML(generatedResponse);
+
+            this.currentResponse = sanitizedResponse;
+            this.messages.push({
+                speaker: "LLaMA",
+                content: sanitizedResponse,
+                responseTime: ((Date.now() - this.startTime) / 1000).toFixed(2)
+            });
+
+            updateConversationUI(this.id);
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error("Error:", error);
+                this.currentResponse = `<span style="color: red;">Error: ${error.message}</span>`;
+            }
+        } finally {
+            this.isGenerating = false;
+            this.abortController = null;
+            updateConversationUI(this.id);
+        }
+    }
+
+    abort() {
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+    }
+}
+
+// Global state
+let conversations = new Map();
+let currentConversationId = null;
+let temperature = 0.7;
+
+// DOM elements
 const form = document.getElementById("prompt-form");
 const conversationHistory = document.getElementById("conversation-history");
 const conversationList = document.getElementById("conversation-list");
@@ -5,128 +84,43 @@ const newConversationBtn = document.getElementById("new-conversation-btn");
 const darkModeToggle = document.getElementById("dark-mode-toggle");
 const settingsShelf = document.getElementById("settings-shelf");
 const settingsIcon = document.getElementById("settings-icon");
-const modelSelect = document.getElementById("model-select"); 
+const modelSelect = document.getElementById("model-select");
 const modeToggle = document.getElementById("mode-toggle");
 const deletePopup = document.getElementById("delete-popup");
 const cancelPopupBtn = document.getElementById("cancel-popup");
 const confirmPopupBtn = document.getElementById("confirm-popup");
 const promptInput = document.getElementById("prompt");
 
-let isTyping = false;
-let conversations = [];
-let currentConversationId = null;
-let temperature = 0.7; 
-let abortController = null;
-let conversationToDelete = null;
-
 // Load conversations from localStorage
 function loadConversationsFromLocalStorage() {
     const savedConversations = localStorage.getItem('conversations');
     if (savedConversations) {
-        conversations = JSON.parse(savedConversations);
+        const conversationsArray = JSON.parse(savedConversations);
+        conversations = new Map(conversationsArray.map(conv => [conv.id, new Conversation(conv.id, conv.name)]));
+        conversationsArray.forEach(conv => {
+            conversations.get(conv.id).messages = conv.messages;
+        });
         updateConversationList();
     }
 }
 
 // Save conversations to localStorage
 function saveConversationsToLocalStorage() {
-    localStorage.setItem('conversations', JSON.stringify(conversations));
+    const conversationsArray = Array.from(conversations.values()).map(conv => ({
+        id: conv.id,
+        name: conv.name,
+        messages: conv.messages
+    }));
+    localStorage.setItem('conversations', JSON.stringify(conversationsArray));
 }
-
-newConversationBtn.addEventListener("click", startNewConversation);
-
-document.addEventListener("DOMContentLoaded", function () {
-    loadConversationsFromLocalStorage(); // Load conversations when the page loads
-
-    if (conversations.length === 0) {
-        startNewConversation();
-    } else {
-        // Load the most recent conversation
-        const mostRecentConversation = conversations[conversations.length - 1];
-        if (mostRecentConversation) {
-            loadConversation(mostRecentConversation.id);
-        } else {
-            startNewConversation();
-        }
-    }
-
-    const modelSelect = document.getElementById("model-select");
-
-    if (!modelSelect) {
-        console.error("Model select element not found");
-        return;
-    }
-
-    // Fetch models from the API
-    fetch("/api/models")
-        .then(response => {
-            console.log("Response status:", response.status);
-            if (!response.ok) {
-                throw new Error("Failed to fetch models");
-            }
-            return response.json();
-        })
-        .then(models => {
-            console.log("Models fetched:", models);
-
-            if (models.length === 0) {
-                console.error("No models available");
-                return;
-            }
-
-            models.forEach(model => {
-                const option = document.createElement("option");
-                option.value = model.name;
-                option.textContent = model.name;
-                modelSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error("Error fetching models:", error));
-});
-
-// Listen for changes to the mode toggle
-modeToggle.addEventListener("change", function() {
-    if (this.checked) {
-        temperature = 1;  // Set to Creative temperature
-        console.log("Temperature set to Creative:", temperature);
-    } else {
-        temperature = 0.7;  // Set to Precise temperature
-        console.log("Temperature set to Precise:", temperature);
-    }
-});
-
-// Dark mode toggle functionality
-if (localStorage.getItem('dark-mode') === 'enabled') {
-    document.body.classList.add('dark-mode');
-    darkModeToggle.textContent = 'Light Mode';
-} else {
-    darkModeToggle.textContent = 'Dark Mode';
-}
-
-darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-
-    // Save the user's preference in localStorage
-    if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('dark-mode', 'enabled');
-        darkModeToggle.textContent = 'Light Mode';
-    } else {
-        localStorage.setItem('dark-mode', 'disabled');
-        darkModeToggle.textContent = 'Dark Mode';
-    }
-});
 
 function startNewConversation() {
-    const newConversation = {
-        id: Date.now(),
-        name: `Conversation ${conversations.length + 1}`,
-        messages: []
-    };
-    conversations.push(newConversation);
+    const newConversation = new Conversation(Date.now(), `Conversation ${conversations.size + 1}`);
+    conversations.set(newConversation.id, newConversation);
     currentConversationId = newConversation.id;
     updateConversationList();
     clearConversationHistory();
-    
+    saveConversationsToLocalStorage();
 }
 
 function updateConversationList() {
@@ -143,12 +137,10 @@ function updateConversationList() {
         const nameSpan = li.querySelector('.conversation-name');
         const deleteBtn = li.querySelector('.delete-btn');
 
-        // Add click event to load the conversation when the list item is clicked
         li.addEventListener('click', () => {
             loadConversation(conv.id);
         });
 
-        // Prevent the conversation from loading when clicking on editable name or delete button
         nameSpan.addEventListener('click', (e) => {
             e.stopPropagation();
         });
@@ -157,47 +149,123 @@ function updateConversationList() {
             deleteConversation(conv.id, li);
         });
 
-        // Update the conversation name when editing finishes (blur)
         nameSpan.addEventListener('blur', (e) => {
             e.stopPropagation();
             conv.name = e.target.textContent;
-            saveConversationsToLocalStorage();  // Save name changes
+            saveConversationsToLocalStorage();
         });
 
-        // Save the name and exit editing mode on 'Enter' key press
         nameSpan.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                nameSpan.blur();  // Exit the contenteditable mode
+                nameSpan.blur();
             }
         });
 
-        // Add the list item to the conversation list
+        if (conv.isGenerating) {
+            li.classList.add('generating');
+        }
+
         conversationList.appendChild(li);
     });
 }
 
-function deleteConversation(id, element) {
-    openDeletePopup(id, element);  // Open the custom delete pop-up near the conversation element
-}
-
-
 function loadConversation(id) {
     currentConversationId = id;
     clearConversationHistory();
-    const conversation = conversations.find(conv => conv.id === id);
-    conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime));
+    const conversation = conversations.get(id);
+    if (conversation) {
+        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime, false));
+        if (conversation.isGenerating) {
+            addGeneratingMessage();
+        }
+    } else {
+        console.error(`Conversation with id ${id} not found`);
+        startNewConversation();
+    }
 }
 
 function clearConversationHistory() {
     conversationHistory.innerHTML = '';
 }
 
+function addToConversationHistory(speaker, content, responseTime, saveToStorage = true) {
+    const li = document.createElement("li");
+    li.classList.add("fade-in");
+    
+    li.innerHTML = `
+        <div class="message-header">
+            <strong>${speaker}:</strong>
+            <button class="collapse-btn">Collapse</button>
+        </div>
+        <div class="message-content">${formatResponseText(content)}</div>
+    `;
+
+    if (responseTime != undefined) {
+        const timeMessage = document.createElement("small");
+        timeMessage.classList.add("response-time");
+        timeMessage.textContent = `${responseTime}s`;
+        li.appendChild(timeMessage);
+    }
+
+    const collapseBtn = li.querySelector('.collapse-btn');
+    const messageContent = li.querySelector('.message-content');
+    collapseBtn.addEventListener('click', function() {
+        messageContent.classList.toggle('collapsed');
+        this.textContent = messageContent.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+        const timeMessage = li.querySelector('.response-time');
+        if (timeMessage) {
+            timeMessage.style.display = messageContent.classList.contains('collapsed') ? 'none' : 'block';
+        }
+    });
+
+    conversationHistory.appendChild(li);
+    li.classList.add("show");
+    conversationHistory.scrollTop = conversationHistory.scrollHeight;
+
+    if (currentConversationId && saveToStorage) {
+        const conversation = conversations.get(currentConversationId);
+        if (conversation) {
+            conversation.messages.push({
+                speaker, 
+                content, 
+                responseTime: responseTime || undefined
+            });
+            saveConversationsToLocalStorage();
+        } else {
+            console.error(`Conversation with id ${currentConversationId} not found`);
+            startNewConversation();
+        }
+    }
+}
+
+function addGeneratingMessage() {
+    const li = document.createElement("li");
+    li.innerHTML = `
+        <div class="message-header">
+            <strong>LLaMA:</strong>
+        </div>
+        <div class="message-content"><span class="typing">LLaMA is thinking</span></div>
+    `;
+    conversationHistory.appendChild(li);
+    conversationHistory.scrollTop = conversationHistory.scrollHeight;
+}
+
+function updateConversationUI(conversationId) {
+    if (conversationId === currentConversationId) {
+        clearConversationHistory();
+        const conversation = conversations.get(conversationId);
+        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime, false));
+        if (conversation.isGenerating) {
+            addGeneratingMessage();
+        }
+    }
+    updateConversationList();
+}
+
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (isTyping) return;
 
-    const promptInput = document.getElementById("prompt");
     const prompt = promptInput.value.trim();
     const selectedModel = modelSelect.value;
     promptInput.value = "";
@@ -208,196 +276,97 @@ form.addEventListener("submit", async (e) => {
         startNewConversation();
     }
 
+    const conversation = conversations.get(currentConversationId);
     addToConversationHistory("You", prompt);
 
-    // Get the toggle value
     const includeHistory = document.getElementById("include-history").checked;
-
-    // Prepare the prompt to send (excluding response time)
     let promptToSend;
-    if (includeHistory && currentConversationId) {
-        const conversation = conversations.find(conv => conv.id === currentConversationId);
+    if (includeHistory) {
         promptToSend = conversation.messages
-            .filter(msg => msg.speaker !== "Response Time")  // Exclude time message
-            .map(msg => `${msg.speaker}: ${msg.content}`).join('\n');  // Only content gets included
+            .filter(msg => msg.speaker !== "Response Time")
+            .map(msg => `${msg.speaker}: ${msg.content}`).join('\n') + `\nYou: ${prompt}`;
     } else {
         promptToSend = `You: ${prompt}`;
     }
 
-    // Create the payload, including the selected model
-    const payload = {
-        prompt: promptToSend,
-        model: selectedModel,
-        temperature: temperature
-    };
+    conversation.generateResponse(promptToSend, selectedModel, temperature);
+    updateConversationUI(currentConversationId);
+});
 
-    console.log("payload:", payload);
+newConversationBtn.addEventListener("click", startNewConversation);
 
-    const responseLi = document.createElement("li");
-    responseLi.style.position = "relative"; // Ensure relative positioning for the time message
-    responseLi.innerHTML = `
-        <div class="message-header">
-            <strong>LLaMA:</strong>
-            <button class="collapse-btn">Collapse</button>
-        </div>
-        <div class="message-content"><span class="typing">LLaMA is thinking</span></div>
-    `;
-    conversationHistory.appendChild(responseLi);
-    conversationHistory.scrollTop = conversationHistory.scrollHeight;
+// Dark mode toggle functionality
+if (localStorage.getItem('dark-mode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.textContent = 'Light Mode';
+} else {
+    darkModeToggle.textContent = 'Dark Mode';
+}
 
-    // Attach collapse button event listener
-    const collapseBtn = responseLi.querySelector('.collapse-btn');
-    const messageContent = responseLi.querySelector('.message-content');
-    collapseBtn.addEventListener('click', function() {
-        messageContent.classList.toggle('collapsed');
-        this.textContent = messageContent.classList.contains('collapsed') ? 'Expand' : 'Collapse';
-    });
-
-    isTyping = true;
-
-    // Create a new AbortController
-    abortController = new AbortController();
-
-    // Start timer to calculate the response time
-    const startTime = performance.now();
-
-    try {
-        const response = await fetch("/api/generate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload),
-            signal: abortController.signal
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.message || "Failed to generate response");
-        }
-
-        const data = await response.json();
-        let generatedResponse = data.response;
-
-        generatedResponse = generatedResponse.replace(/\+/g, '');
-        const sanitizedResponse = sanitizeHTML(generatedResponse);
-
-        let formattedResponse = '';
-        for (let i = 0; i < sanitizedResponse.length; i++) {
-            formattedResponse += sanitizedResponse[i];
-            messageContent.innerHTML = formatResponseText(formattedResponse);
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            
-            // Check if the request has been aborted
-            if (abortController.signal.aborted) {
-                throw new DOMException('Aborted', 'AbortError');
-            }
-        }
-
-        // Stop the timer after the response is fully generated
-        const endTime = performance.now();
-        const duration = (endTime - startTime) / 1000;  // Convert milliseconds to seconds
-
-        // Append the time message to the response
-        const timeMessage = document.createElement("small");
-        timeMessage.classList.add("response-time");  // Add class for styling
-        timeMessage.textContent = `${duration.toFixed(2)}s`;
-        responseLi.appendChild(timeMessage);
-
-        // Save the response to the conversation history, including the time
-        if (currentConversationId) {
-            const conversation = conversations.find(conv => conv.id === currentConversationId);
-            conversation.messages.push({
-                speaker: "LLaMA",
-                content: sanitizedResponse,
-                responseTime: duration.toFixed(2)  // Store the time
-            });
-            saveConversationsToLocalStorage();
-        }
-
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log('Fetch aborted');
-        } else {
-            messageContent.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
-            console.error("Error:", error);
-        }
-    } finally {
-        isTyping = false;
-        abortController = null;
+darkModeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('dark-mode', 'enabled');
+        darkModeToggle.textContent = 'Light Mode';
+    } else {
+        localStorage.setItem('dark-mode', 'disabled');
+        darkModeToggle.textContent = 'Dark Mode';
     }
 });
 
-function addToConversationHistory(speaker, content, responseTime, saveToStorage = true) {
-    const li = document.createElement("li");
-    li.classList.add("fade-in");
-    
-    // Main message content
-    li.innerHTML = `
-        <div class="message-header">
-            <strong>${speaker}:</strong>
-            <button class="collapse-btn">Collapse</button>
-        </div>
-        <div class="message-content">${formatResponseText(sanitizeHTML(content))}</div>
-    `;
+// Listen for changes to the mode toggle
+modeToggle.addEventListener("change", function() {
+    temperature = this.checked ? 1 : 0.7;
+    console.log("Temperature set to:", temperature);
+});
 
-    // Conditionally add the response time if it exists
-    if (responseTime != undefined) {
-        const timeMessage = document.createElement("small");
-        timeMessage.classList.add("response-time");
-        timeMessage.textContent = `${responseTime}s`;
-        li.appendChild(timeMessage);  // Append the time only if it exists
-    }
+settingsIcon.addEventListener("click", () => {
+    settingsShelf.classList.toggle("open");
+});
 
-    // Add the collapse functionality
-    const collapseBtn = li.querySelector('.collapse-btn');
-    const messageContent = li.querySelector('.message-content');
-    collapseBtn.addEventListener('click', function() {
-        messageContent.classList.toggle('collapsed');
-        
-        // Toggle the collapse button text
-        this.textContent = messageContent.classList.contains('collapsed') ? 'Expand' : 'Collapse';
-        
-        // Toggle the visibility of the response time
-        const timeMessage = li.querySelector('.response-time'); // Get the response time element
-        if (timeMessage) {
-            timeMessage.style.display = messageContent.classList.contains('collapsed') ? 'none' : 'block';
-        }
-    });
-
-    // Add the message to the conversation history and scroll to the bottom
-    conversationHistory.appendChild(li);
-    li.classList.add("show");
-    conversationHistory.scrollTop = conversationHistory.scrollHeight;
-
-    // Save the conversation to local storage if necessary
-    if (currentConversationId && saveToStorage) {
-        const conversation = conversations.find(conv => conv.id === currentConversationId);
-        if (conversation) {
-            // Save the message with or without response time
-            conversation.messages.push({
-                speaker, 
-                content, 
-                responseTime: responseTime || undefined // Save time if it exists, else undefined
-            });
-            saveConversationsToLocalStorage();
-        } else {
-            console.error(`Conversation with id ${currentConversationId} not found`);
-            startNewConversation();
-        }
-    }
+function deleteConversation(id, element) {
+    openDeletePopup(id, element);
 }
-function loadConversation(id) {
-    currentConversationId = id;
-    clearConversationHistory();
-    const conversation = conversations.find(conv => conv.id === id);
-    if (conversation) {
-        conversation.messages.forEach(msg => addToConversationHistory(msg.speaker, msg.content, msg.responseTime, false));
-    } else {
-        console.error(`Conversation with id ${id} not found`);
-        startNewConversation();
-    }
+
+function openDeletePopup(id, element) {
+    conversationToDelete = id;
+    const rect = element.getBoundingClientRect();
+    deletePopup.style.top = `${rect.top + window.scrollY}px`;
+    deletePopup.style.left = `${rect.left + rect.width / 2 - 100}px`;
+    deletePopup.style.display = "block";
+    conversationList.classList.add('blur');
+    setTimeout(() => deletePopup.classList.add("show"), 10);
 }
+
+function closeDeletePopup() {
+    deletePopup.classList.remove("show");
+    setTimeout(() => {
+        deletePopup.style.display = "none";
+        conversationList.classList.remove('blur');
+    }, 300);
+}
+
+cancelPopupBtn.addEventListener("click", closeDeletePopup);
+
+confirmPopupBtn.addEventListener("click", function() {
+    if (conversationToDelete) {
+        conversations.delete(conversationToDelete);
+        if (currentConversationId === conversationToDelete) {
+            currentConversationId = null;
+            clearConversationHistory();
+        }
+        updateConversationList();
+        saveConversationsToLocalStorage();
+        closeDeletePopup();
+    }
+});
+
+promptInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event("submit"));
+    }
+});
 
 function sanitizeHTML(str) {
     var temp = document.createElement('div');
@@ -409,59 +378,36 @@ function formatResponseText(text) {
     return marked.parse(text);
 }
 
-settingsIcon.addEventListener("click", () => {
-    settingsShelf.classList.toggle("open");
-});
+// Initialize the application
+document.addEventListener("DOMContentLoaded", function () {
+    loadConversationsFromLocalStorage();
 
-function openDeletePopup(id, element) {
-    conversationToDelete = id;
-
-    // Position the pop-up near the clicked conversation
-    const rect = element.getBoundingClientRect();
-    deletePopup.style.top = `${rect.top + window.scrollY}px`;
-    deletePopup.style.left = `${rect.left + rect.width / 2 - 100}px`;  // Center the pop-up
-    deletePopup.style.display = "block";
-
-    // Add the blur class to the conversation list
-    conversationList.classList.add('blur');
-
-    // Add transition class to animate the pop-up
-    setTimeout(() => deletePopup.classList.add("show"), 10);
-}
-
-function closeDeletePopup() {
-    deletePopup.classList.remove("show");
-    setTimeout(() => {
-        deletePopup.style.display = "none";  // Hide the pop-up after animation
-        conversationList.classList.remove('blur');  // Remove blur effect
-    }, 300);
-}
-
-// Attach event listeners to buttons in the pop-up
-cancelPopupBtn.addEventListener("click", closeDeletePopup);
-
-confirmPopupBtn.addEventListener("click", function() {
-    if (conversationToDelete) {
-        // Perform deletion of the conversation
-        conversations = conversations.filter(conv => conv.id !== conversationToDelete);
-        if (currentConversationId === conversationToDelete) {
-            currentConversationId = null;
-            clearConversationHistory();
-        }
-        updateConversationList();
-        saveConversationsToLocalStorage();  // Save after deletion
-
-        closeDeletePopup();  // Close the pop-up after deletion
+    if (conversations.size === 0) {
+        startNewConversation();
+    } else {
+        const lastConversationId = Array.from(conversations.keys()).pop();
+        loadConversation(lastConversationId);
     }
-});
 
-// Listen for "Enter" key press on the prompt input
-promptInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();  // Prevent the default behavior (new line)
-        form.dispatchEvent(new Event("submit"));  // Trigger form submission
-    }
-});
+    fetch("/api/models")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to fetch models");
+            }
+            return response.json();
+        })
+        .then(models => {
+            if (models.length === 0) {
+                console.error("No models available");
+                return;
+            }
 
-// Start with a new conversation
-startNewConversation();
+            models.forEach(model => {
+                const option = document.createElement("option");
+                option.value = model.name;
+                option.textContent = model.name;
+                modelSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching models:", error));
+});
