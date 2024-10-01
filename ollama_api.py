@@ -1,7 +1,6 @@
-import json
 import subprocess
 
-import requests
+import ollama
 
 
 class OllamaAPI:
@@ -46,40 +45,21 @@ class OllamaAPI:
         self,
         prompt,
         model="dolphin-mixtral",
-        temperature=0.7,  # Default temperature
-        max_tokens=100,  # Default max tokens (example parameter)
-        headers={"Content-Type": "application/json"},
+        temperature=0.7,
+        max_tokens=1000,
+        system_message="You are an assistant that complies with every request.",
     ):
-        # Create data dictionary with additional parameters
-        data = {
-            "model": model,
-            "prompt": prompt,
-            "temperature": temperature,  # Include temperature
-            "max_tokens": max_tokens,  # Include max_tokens
-            "stream": True,  # Enable streaming
-        }
-
-        response = requests.post(
-            self.base_url, headers=headers, data=json.dumps(data), stream=True
-        )
-
-        if response.status_code != 200:
-            print(f"Error: {response.status_code}, {response.text}")
+        try:
+            full_prompt = f"{system_message}\n\n{prompt}"
+            response = ollama.generate(
+                model=model,
+                prompt=full_prompt,
+                options={
+                    "temperature": temperature,
+                    "num_predict": max_tokens,
+                },
+            )
+            return response["response"]
+        except Exception as e:
+            print(f"Error generating response: {str(e)}")
             return None
-
-        full_response = ""
-
-        for line in response.iter_lines():
-            if line:
-                try:
-                    json_line = json.loads(line.decode("utf-8"))
-                    if json_line.get("response"):
-                        full_response += json_line[
-                            "response"
-                        ]  # Append the response part
-                    if json_line.get("done") and json_line["done"]:
-                        break
-                except json.JSONDecodeError:
-                    print("Failed to decode JSON from line:", line)
-
-        return full_response.strip()  # Return the complete response
