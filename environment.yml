@@ -7,4 +7,5 @@ dependencies:
       - flask
       - ollama
       - langchain
+      - langchain-community
 name: llm_env
