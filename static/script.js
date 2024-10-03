@@ -52,6 +52,7 @@ class Conversation {
             });
 
             updateConversationUI(this.id);
+            saveConversationsToLocalStorage();
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error("Error:", error);
