@@ -1,11 +1,10 @@
 import os
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import  List
 
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain_community.vectorstores import Chroma
@@ -13,7 +12,7 @@ from langchain_community.vectorstores import Chroma
 # Configuration
 DOCUMENT_DIR = "documents"
 DB_DIR = "vectorstore"
-CHECK_INTERVAL = 60  # seconds
+CHECK_INTERVAL = 600  # seconds
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
 EMBEDDING_MODEL = "nomic-embed-text"
