@@ -217,7 +217,7 @@ function addToConversationHistory(speaker, content, responseTime, saveToStorage 
     codeBlocks.forEach(block => {
         const copyBtn = document.createElement('button');
         copyBtn.innerHTML = `
-            <img src="/static/copy.png" alt="Copy" class="copy-icon" />
+            <img src="/static/assets/copy.png" alt="Copy" class="copy-icon" />
         `;
         copyBtn.classList.add('copy-btn');
         copyBtn.title = 'Copy code';
