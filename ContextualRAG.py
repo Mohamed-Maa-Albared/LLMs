@@ -7,6 +7,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
 from langchain_community.document_loaders import (
     CSVLoader,
     PyPDFLoader,
@@ -15,7 +16,6 @@ from langchain_community.document_loaders import (
 )
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
-from langchain_community.vectorstores import Chroma
 
 # Configuration
 DOCUMENT_DIR = "documents"
@@ -49,26 +49,6 @@ def unified_document_loader(file_path: str) -> List[Document]:
     except Exception as e:
         print(f"Error loading file {file_path}: {str(e)}")
         return []
-
-
-import hashlib
-import os
-import time
-from typing import List, Optional, Tuple
-
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain.schema import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import (
-    CSVLoader,
-    PyPDFLoader,
-    TextLoader,
-    UnstructuredWordDocumentLoader,
-)
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.llms import Ollama
-from langchain_community.vectorstores import Chroma
 
 
 def load_and_process_documents(
@@ -188,10 +168,15 @@ def contextual_chunking(
 def create_and_store_embeddings(chunks: List[Document]) -> Chroma:
     """Create embeddings and store them in a local Chroma database."""
     embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
+
+    # Create a Chroma vector store from the document chunks
     vectorstore = Chroma.from_documents(
         documents=chunks, embedding=embeddings, persist_directory=DB_DIR
     )
+
+    # Persist the vector store to disk
     vectorstore.persist()
+
     return vectorstore
 
 
@@ -211,8 +196,6 @@ def main():
     if os.path.exists(DB_DIR):
         embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
         try:
-            from langchain_community.vectorstores import Chroma
-
             vectorstore = Chroma(
                 persist_directory=DB_DIR, embedding_function=embeddings
             )

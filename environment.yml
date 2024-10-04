@@ -8,6 +8,7 @@ dependencies:
       - ollama
       - langchain
       - langchain-community
+      - langchain-chroma
       - unstructured
       - chromadb
 name: llm_env
