@@ -134,7 +134,7 @@ function updateConversationList() {
                 <button class="delete-btn">Delete</button>
             </div>
         `;
-        
+
         const nameSpan = li.querySelector('.conversation-name');
         const deleteBtn = li.querySelector('.delete-btn');
 
@@ -193,25 +193,48 @@ function clearConversationHistory() {
 function addToConversationHistory(speaker, content, responseTime, saveToStorage = true) {
     const li = document.createElement("li");
     li.classList.add("fade-in");
-    
+
+    const formattedContent = formatResponseText(content);
+
     li.innerHTML = `
         <div class="message-header">
             <strong>${speaker}:</strong>
             <button class="collapse-btn">Collapse</button>
         </div>
-        <div class="message-content">${formatResponseText(content)}</div>
+        <div class="message-content">${formattedContent}</div>
     `;
 
-    if (responseTime != undefined) {
+    // Add response time if provided
+    if (responseTime !== undefined) {
         const timeMessage = document.createElement("small");
         timeMessage.classList.add("response-time");
         timeMessage.textContent = `${responseTime}s`;
         li.appendChild(timeMessage);
     }
 
+    // Add copy buttons to code blocks
+    const codeBlocks = li.querySelectorAll('pre code');
+    codeBlocks.forEach(block => {
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = `
+            <img src="/static/copy.png" alt="Copy" class="copy-icon" />
+        `;
+        copyBtn.classList.add('copy-btn');
+        copyBtn.title = 'Copy code';
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(block.textContent).then(() => {
+                copyBtn.classList.add('copied');
+                setTimeout(() => copyBtn.classList.remove('copied'), 2000);
+            });
+        });
+        block.parentNode.style.position = 'relative'; // Ensure parent is relative for absolute positioning
+        block.parentNode.appendChild(copyBtn);
+    });
+
+    // Implement collapsing functionality
     const collapseBtn = li.querySelector('.collapse-btn');
     const messageContent = li.querySelector('.message-content');
-    collapseBtn.addEventListener('click', function() {
+    collapseBtn.addEventListener('click', function () {
         messageContent.classList.toggle('collapsed');
         this.textContent = messageContent.classList.contains('collapsed') ? 'Expand' : 'Collapse';
         const timeMessage = li.querySelector('.response-time');
@@ -220,16 +243,18 @@ function addToConversationHistory(speaker, content, responseTime, saveToStorage 
         }
     });
 
+    // Add the message to the conversation history
     conversationHistory.appendChild(li);
     li.classList.add("show");
     conversationHistory.scrollTop = conversationHistory.scrollHeight;
 
+    // Save to storage if required
     if (currentConversationId && saveToStorage) {
         const conversation = conversations.get(currentConversationId);
         if (conversation) {
             conversation.messages.push({
-                speaker, 
-                content, 
+                speaker,
+                content,
                 responseTime: responseTime || undefined
             });
             saveConversationsToLocalStorage();
@@ -316,7 +341,7 @@ darkModeToggle.addEventListener('click', () => {
 });
 
 // Listen for changes to the mode toggle
-modeToggle.addEventListener("change", function() {
+modeToggle.addEventListener("change", function () {
     temperature = this.checked ? 1 : 0.7;
     console.log("Temperature set to:", temperature);
 });
@@ -349,7 +374,7 @@ function closeDeletePopup() {
 
 cancelPopupBtn.addEventListener("click", closeDeletePopup);
 
-confirmPopupBtn.addEventListener("click", function() {
+confirmPopupBtn.addEventListener("click", function () {
     if (conversationToDelete) {
         conversations.delete(conversationToDelete);
         if (currentConversationId === conversationToDelete) {
@@ -376,8 +401,21 @@ function sanitizeHTML(str) {
 }
 
 function formatResponseText(text) {
-    return marked.parse(text);
+    // Handle thinking, output, and reflection tags
+    text = text.replace(/<thinking>([\s\S]*?)<\/thinking>/g, '<div class="thinking"><h4>Thinking:</h4>$1</div>');
+    text = text.replace(/<output>([\s\S]*?)<\/output>/g, '<div class="output"><h4>Output:</h4>$1</div>');
+    text = text.replace(/<reflection>([\s\S]*?)<\/reflection>/g, '<div class="reflection"><h4>Reflection:</h4>$1</div>');
+
+    // Use marked.js to parse Markdown, including code blocks
+    return marked.parse(text, {
+        highlight: function (code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-'
+    });
 }
+
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", function () {
