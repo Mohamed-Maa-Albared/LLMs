@@ -18,5 +18,6 @@ dependencies:
       - bs4
       - aiohttp
       - duckduckgo-search
-      - google-api-python-client>=2.100.0
+      - google-api-python-client
+      - langchain-google-community
 name: llm_env

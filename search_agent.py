@@ -16,8 +16,8 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_community.utilities import GoogleSearchAPIWrapper
 from langchain_community.vectorstores import FAISS
+from langchain_google_community import GoogleSearchAPIWrapper
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
