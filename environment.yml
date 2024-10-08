@@ -11,4 +11,12 @@ dependencies:
       - langchain-chroma
       - unstructured
       - chromadb
+      - faiss-cpu
+      - google-search-results
+      - nltk
+      - scikit-learn
+      - bs4
+      - aiohttp
+      - duckduckgo-search
+      - google-api-python-client>=2.100.0
 name: llm_env
