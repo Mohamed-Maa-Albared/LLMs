@@ -688,7 +688,7 @@ input:checked+.slider:before {
 pre {
     position: relative;
     background-color: var(--code-bg-color);
-    border-radius: 5px;
+    border-radius: 15px;
     padding: 15px;
     overflow-x: auto;
 }
@@ -716,7 +716,7 @@ code {
     /* Use primary color from theme */
     border: none;
     /* Remove default border */
-    border-radius: 5px;
+    border-radius: 15px;
     /* Rounded corners */
 }
 

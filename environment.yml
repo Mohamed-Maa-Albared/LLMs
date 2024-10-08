@@ -20,4 +20,5 @@ dependencies:
       - duckduckgo-search
       - google-api-python-client
       - langchain-google-community
+      - dateparser
 name: llm_env
