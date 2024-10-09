@@ -17,239 +17,251 @@ from langchain_community.document_loaders import (
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 
-# Configuration
-DOCUMENT_DIR = "documents"
-DB_DIR = "vectorstore"
-CHECK_INTERVAL = 600  # seconds
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
-EMBEDDING_MODEL = "nomic-embed-text"
-LLM_MODEL = "llama3.1:latest"
 
+class ContextualRAG:
+    """
+    A class to handle Contextual Retrieval Augmented Generation (RAG) tasks.
 
-def get_document_hash(content: str) -> str:
-    """Generate a hash for the document content to check for duplicates."""
-    return hashlib.md5(content.encode()).hexdigest()
+    This class encapsulates functionality for loading documents, processing them,
+    creating embeddings, and setting up a question-answering system.
+    """
 
+    def __init__(
+        self,
+        document_dir: str = "documents",
+        db_dir: str = "vectorstore",
+        chunk_size: int = 1000,
+        chunk_overlap: int = 200,
+        embedding_model: str = "nomic-embed-text",
+        llm_model: str = "llama3.1:latest",
+        check_on_init: bool = False,
+    ):
+        """
+        Initialize the ContextualRAG object.
 
-def unified_document_loader(file_path: str) -> List[Document]:
-    """Load documents of various formats based on file extension."""
-    _, file_extension = os.path.splitext(file_path)
-    try:
-        if file_extension.lower() == ".txt":
-            return TextLoader(file_path).load()
-        elif file_extension.lower() == ".csv":
-            return CSVLoader(file_path).load()
-        elif file_extension.lower() == ".pdf":
-            return PyPDFLoader(file_path).load()
-        elif file_extension.lower() in [".doc", ".docx"]:
-            return UnstructuredWordDocumentLoader(file_path).load()
-        else:
-            raise ValueError(f"Unsupported file type: {file_extension}")
-    except Exception as e:
-        print(f"Error loading file {file_path}: {str(e)}")
-        return []
+        Args:
+            document_dir (str): Directory containing the documents to process.
+            db_dir (str): Directory to store the vector database.
+            chunk_size (int): Size of text chunks for processing.
+            chunk_overlap (int): Overlap between text chunks.
+            embedding_model (str): Name of the embedding model to use.
+            llm_model (str): Name of the language model to use.
+            check_on_init (bool): Whether to check and process documents during initialization.
+        """
+        self.document_dir = document_dir
+        self.db_dir = db_dir
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.embedding_model = embedding_model
+        self.llm_model = llm_model
 
+        self.llm = Ollama(model=self.llm_model)
+        self.embeddings = OllamaEmbeddings(model=self.embedding_model)
+        self.vectorstore = self._initialize_vectorstore()
 
-def load_and_process_documents(
-    directory: str, vectorstore: Optional[Chroma] = None
-) -> Optional[Tuple[List[Document], List[Document]]]:
-    """Load documents from a directory and process them."""
-    documents = []
+        if check_on_init:
+            print("Checking for documents during initialization...")
+            self.process_documents()
 
-    # Walk through the directory to find files
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            loaded_docs = unified_document_loader(file_path)
+    def _initialize_vectorstore(self) -> Optional[Chroma]:
+        """Initialize the vector store if it exists."""
+        if os.path.exists(self.db_dir):
+            try:
+                return Chroma(
+                    persist_directory=self.db_dir, embedding_function=self.embeddings
+                )
+            except ImportError:
+                print("Error initializing vector store.")
+                return None
+        return None
 
-            for doc in loaded_docs:
-                content = doc.page_content
-                content_hash = get_document_hash(content)
+    @staticmethod
+    def get_document_hash(content: str) -> str:
+        """Generate a hash for the document content to check for duplicates."""
+        return hashlib.md5(content.encode()).hexdigest()
 
-                # Check if the document already exists in the vectorstore
-                if vectorstore:
-                    existing_docs = vectorstore.get(where={"source": file_path})
-                    print(
-                        f"Checking for existing documents for {file_path}: Found {len(existing_docs)} document(s)."
-                    )
-                    # Ensure existing_docs is a list and not empty before accessing it
-                    if isinstance(existing_docs, dict) and "metadatas" in existing_docs:
-                        found_existing = (
-                            False  # Flag to check if we found a matching document
+    def unified_document_loader(self, file_path: str) -> List[Document]:
+        """Load documents of various formats based on file extension."""
+        _, file_extension = os.path.splitext(file_path)
+        try:
+            if file_extension.lower() == ".txt":
+                return TextLoader(file_path).load()
+            elif file_extension.lower() == ".csv":
+                return CSVLoader(file_path).load()
+            elif file_extension.lower() == ".pdf":
+                return PyPDFLoader(file_path).load()
+            elif file_extension.lower() in [".doc", ".docx"]:
+                return UnstructuredWordDocumentLoader(file_path).load()
+            else:
+                raise ValueError(f"Unsupported file type: {file_extension}")
+        except Exception as e:
+            print(f"Error loading file {file_path}: {str(e)}")
+            return []
+
+    def load_and_process_documents(
+        self,
+    ) -> Optional[Tuple[List[Document], List[Document]]]:
+        """Load documents from the directory and process them."""
+        documents = []
+
+        # Walk through the directory to find files
+        for root, _, files in os.walk(self.document_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                loaded_docs = self.unified_document_loader(file_path)
+
+                for doc in loaded_docs:
+                    content = doc.page_content
+                    content_hash = self.get_document_hash(content)
+
+                    # Check if the document already exists in the vectorstore
+                    if self.vectorstore:
+                        existing_docs = self.vectorstore.get(
+                            where={"source": file_path}
+                        )
+                        print(
+                            f"Checking for existing documents for {file_path}: Found {len(existing_docs)} document(s)."
                         )
 
-                        # Iterate through all existing metadatas to find a match
-                        for metadata in existing_docs["metadatas"]:
-                            existing_hash = metadata.get("content_hash")
+                        if (
+                            isinstance(existing_docs, dict)
+                            and "metadatas" in existing_docs
+                        ):
+                            found_existing = False
 
-                            # Log both hashes for debugging
+                            for metadata in existing_docs["metadatas"]:
+                                existing_hash = metadata.get("content_hash")
+                                print(
+                                    f"Comparing hashes: Existing Hash: {existing_hash}, New Hash: {content_hash}"
+                                )
+
+                                if existing_hash == content_hash:
+                                    print(
+                                        f"Skipping {file_path} as it's already in the database."
+                                    )
+                                    found_existing = True
+                                    break
+
+                            if found_existing:
+                                continue
+                        else:
                             print(
-                                f"Comparing hashes: Existing Hash: {existing_hash}, New Hash: {content_hash}"
+                                f"No matching document found for {file_path}. Adding as new."
                             )
 
-                            # Compare hashes to decide whether to skip or add the document
-                            if existing_hash == content_hash:
-                                print(
-                                    f"Skipping {file_path} as it's already in the database."
-                                )
-                                found_existing = True
-                                break  # Exit loop since we found a match
+                    # Add metadata and append document
+                    doc.metadata["content_hash"] = content_hash
+                    doc.metadata["source"] = file_path
+                    documents.append(doc)
 
-                        if found_existing:
-                            continue  # Skip adding this document
-                    else:
-                        print(
-                            f"No matching document found for {file_path}. Adding as new."
-                        )
+        if not documents:
+            print(f"No new or modified documents found in {self.document_dir}.")
+            return [], []
 
-                # Add metadata and append document
-                doc.metadata["content_hash"] = content_hash
-                doc.metadata["source"] = file_path
-                documents.append(doc)
-
-    # Check if any new or modified documents were found
-    if not documents:
-        print(f"No new or modified documents found in {directory}.")
-        return [], []  # Return empty lists instead of None
-
-    # Split documents into chunks for processing
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
-    )
-
-    chunks = text_splitter.split_documents(documents)
-    return chunks, documents
-
-
-def contextual_chunking(
-    chunks: List[Document], documents: List[Document], llm
-) -> List[Document]:
-    """Perform contextual chunking using a local LLM."""
-    prompt_template = """
-    <document> 
-    {{full_doc}} 
-    </document> 
-    Here is the chunk we want to situate within the whole document 
-    <chunk> 
-    {{chunk}} 
-    </chunk> 
-    Please give a short succinct context to situate this chunk within the overall 
-    document for the purposes of improving search retrieval of the chunk. 
-    Answer only with the succinct context and nothing else.
-    """
-    prompt = PromptTemplate(
-        template=prompt_template, input_variables=["full_doc", "chunk"]
-    )
-
-    contextual_chunks = []
-    for chunk in chunks:
-        # Find the corresponding full document for this chunk
-        full_doc = next(
-            (
-                doc.page_content
-                for doc in documents
-                if doc.metadata["source"] == chunk.metadata["source"]
-            ),
-            "",
+        # Split documents into chunks for processing
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
 
-        context = llm.invoke(prompt.format(full_doc=full_doc, chunk=chunk.page_content))
-        contextual_chunks.append(
-            Document(
-                page_content=f"Context: {context}\n\nChunk: {chunk.page_content}",
-                metadata=chunk.metadata,
-            )
+        chunks = text_splitter.split_documents(documents)
+        return chunks, documents
+
+    def contextual_chunking(
+        self, chunks: List[Document], documents: List[Document]
+    ) -> List[Document]:
+        """Perform contextual chunking using a local LLM."""
+        prompt_template = """
+        <document> 
+        {{full_doc}} 
+        </document> 
+        Here is the chunk we want to situate within the whole document 
+        <chunk> 
+        {{chunk}} 
+        </chunk> 
+        Please give a short succinct context to situate this chunk within the overall 
+        document for the purposes of improving search retrieval of the chunk. 
+        Answer only with the succinct context and nothing else.
+        """
+        prompt = PromptTemplate(
+            template=prompt_template, input_variables=["full_doc", "chunk"]
         )
 
-    return contextual_chunks
-
-
-def create_and_store_embeddings(chunks: List[Document]) -> Chroma:
-    """Create embeddings and store them in a local Chroma database."""
-    embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
-
-    # Create a Chroma vector store from the document chunks
-    vectorstore = Chroma.from_documents(
-        documents=chunks, embedding=embeddings, persist_directory=DB_DIR
-    )
-
-    # Persist the vector store to disk
-    vectorstore.persist()
-
-    return vectorstore
-
-
-def setup_qa_chain(vectorstore: Chroma, llm) -> RetrievalQA:
-    """Set up the question-answering chain."""
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm, chain_type="stuff", retriever=retriever
-    )
-    return qa_chain
-
-
-def main():
-    llm = Ollama(model=LLM_MODEL)
-
-    # Initialize vectorstore if it exists
-    if os.path.exists(DB_DIR):
-        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
-        try:
-            vectorstore = Chroma(
-                persist_directory=DB_DIR, embedding_function=embeddings
+        contextual_chunks = []
+        for chunk in chunks:
+            full_doc = next(
+                (
+                    doc.page_content
+                    for doc in documents
+                    if doc.metadata["source"] == chunk.metadata["source"]
+                ),
+                "",
             )
-        except ImportError:
-            return
-    else:
-        vectorstore = None
 
-    last_check_time = 0
+            context = self.llm.invoke(
+                prompt.format(full_doc=full_doc, chunk=chunk.page_content)
+            )
+            contextual_chunks.append(
+                Document(
+                    page_content=f"Context: {context}\n\nChunk: {chunk.page_content}",
+                    metadata=chunk.metadata,
+                )
+            )
 
-    while True:
-        current_time = time.time()
+        return contextual_chunks
 
-        if current_time - last_check_time >= CHECK_INTERVAL:
-            print("Checking for new or modified documents...")
-            result = load_and_process_documents(DOCUMENT_DIR, vectorstore)
+    def create_and_store_embeddings(self, chunks: List[Document]) -> None:
+        """Create embeddings and store them in a local Chroma database."""
+        if self.vectorstore is None:
+            self.vectorstore = Chroma.from_documents(
+                documents=chunks,
+                embedding=self.embeddings,
+                persist_directory=self.db_dir,
+            )
+        else:
+            self.vectorstore.add_documents(chunks)
 
-            if result is not None:
-                chunks, documents = result
+        self.vectorstore.persist()
 
-                # Check if chunks are empty before processing
-                if not chunks:
-                    print("No new chunks generated from documents.")
-                    last_check_time = (
-                        current_time  # Update time to avoid immediate re-check
-                    )
-                    continue  # Skip to the next iteration
+    def setup_qa_chain(self) -> RetrievalQA:
+        """Set up the question-answering chain."""
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+        return RetrievalQA.from_chain_type(
+            llm=self.llm, chain_type="stuff", retriever=retriever
+        )
 
-                contextual_chunks = contextual_chunking(chunks, documents, llm)
+    def process_documents(self) -> None:
+        """Process documents and update the vector store."""
+        result = self.load_and_process_documents()
 
-                # Check if contextual_chunks is empty before adding to vectorstore
-                if not contextual_chunks:
-                    print("No contextual chunks to add to the vector store.")
-                    last_check_time = (
-                        current_time  # Update time to avoid immediate re-check
-                    )
-                    continue  # Skip to the next iteration
+        if result is not None:
+            chunks, documents = result
 
-                if vectorstore is None:
-                    vectorstore = create_and_store_embeddings(contextual_chunks)
-                else:
-                    try:
-                        vectorstore.add_documents(contextual_chunks)
-                        vectorstore.persist()
-                    except Exception as e:
-                        print(f"Error adding documents to vectorstore: {e}")
+            if not chunks:
+                print("No new chunks generated from documents.")
+                return
 
-                last_check_time = current_time
+            contextual_chunks = self.contextual_chunking(chunks, documents)
+
+            if not contextual_chunks:
+                print("No contextual chunks to add to the vector store.")
+                return
+
+            try:
+                self.create_and_store_embeddings(contextual_chunks)
                 print("Document processing complete.")
-            else:
-                print("No new or modified documents found.")
+            except Exception as e:
+                print(f"Error adding documents to vectorstore: {e}")
 
-        if vectorstore is not None:
-            qa_chain = setup_qa_chain(vectorstore, llm)
+    def run(self) -> None:
+        """Main method to run the ContextualRAG system."""
+        if self.vectorstore is None:
+            print(
+                "No documents have been processed. Please initialize with check_on_init=True or call process_documents() manually."
+            )
+            return
+
+        while True:
+            qa_chain = self.setup_qa_chain()
 
             question = input("Enter your question (or 'quit' to exit): ")
             if question.lower() == "quit":
@@ -257,10 +269,9 @@ def main():
 
             answer = qa_chain.run(question)
             print(f"Answer: {answer}\n")
-        else:
-            print("Waiting for documents to be processed...")
-            time.sleep(CHECK_INTERVAL)
 
 
 if __name__ == "__main__":
-    main()
+    # Initialize the ContextualRAG system with document checking on initialization
+    rag_system = ContextualRAG(check_on_init=True)
+    rag_system.run()
