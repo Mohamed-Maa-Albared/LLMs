@@ -220,8 +220,6 @@ class ContextualRAG:
         else:
             self.vectorstore.add_documents(chunks)
 
-        self.vectorstore.persist()
-
     def setup_qa_chain(self) -> RetrievalQA:
         """Set up the question-answering chain."""
         retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
