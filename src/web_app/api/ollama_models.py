@@ -72,7 +72,7 @@ class OllamaModelManager:
         return [
             model
             for model in models
-            if all(model.get(k) != v for k, v in kwargs.items())
+            if all(model.get(k) not in v for k, v in kwargs.items())
         ]
 
     def to_json(self, models):

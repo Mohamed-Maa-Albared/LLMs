@@ -33,7 +33,7 @@ class ResponseGenerator:
                 models.append(custom_model)
 
         models = self.model_manager.filter_models(
-            models, name="nomic-embed-text:latest"
+            models, name=["nomic-embed-text:latest", "codellama:code"]
         )
         models = self.model_manager.sort_models(models)
         models = [{**d, **{"name": d["name"].replace(":latest", "")}} for d in models]
@@ -49,10 +49,6 @@ class ResponseGenerator:
         stream_to_console=False,
     ):
         try:
-            # Debugging output
-            print(
-                f"Initializing LLM with model: {model} and stream_to_console: {stream_to_console}"
-            )
 
             # Create the LLM if it doesn't exist, if the model has changed, or if streaming preference has changed
             if (
