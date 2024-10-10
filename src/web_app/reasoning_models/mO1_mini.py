@@ -39,10 +39,7 @@ class ReasoningModel:
         solution = self.solution_chain.invoke(
             {"problem": problem + "\n Think carefully"}
         )
-        return (
-            solution,
-            [],
-        )  # Return an empty list for critiques as we're not using them
+        return solution  # Return an empty list for critiques as we're not using them
 
     def parse_response(self, response: str) -> dict:
         parsed = {"thinking": "", "output": "", "reflection": ""}
@@ -65,16 +62,3 @@ class ReasoningModel:
             ].strip()
 
         return parsed
-
-
-# Example usage
-if __name__ == "__main__":
-    model = ReasoningModel()
-    problem = "Create snake in python"
-    solution, _ = model.solve_problem(problem)
-    parsed_solution = model.parse_response(solution)
-
-    print("Thinking:", parsed_solution["thinking"])
-    print("\nOutput:", parsed_solution["output"])
-    if parsed_solution["reflection"]:
-        print("\nReflection:", parsed_solution["reflection"])

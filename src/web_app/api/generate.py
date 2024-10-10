@@ -4,8 +4,9 @@ from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate
 
 from src.utils.config_load import ConfigLoader
-from web_app.reasoning_models.mO1 import ReasoningModel
 from web_app.api.ollama_models import OllamaModelManager
+from web_app.reasoning_models.mO1 import ReasoningModel as ReasoningModel_mO1
+from web_app.reasoning_models.mO1_mini import ReasoningModel as ReasoningModel_mO1_mini
 
 
 class ResponseGenerator:
@@ -35,7 +36,7 @@ class ResponseGenerator:
             models, name="nomic-embed-text:latest"
         )
         models = self.model_manager.sort_models(models)
-
+        models = [{**d, **{"name": d["name"].replace(":latest", "")}} for d in models]
         return models
 
     def generate_response(
@@ -85,7 +86,7 @@ class ResponseGenerator:
             print(f"Error generating response: {str(e)}")
             return None
 
-    def generate_reasoning(
+    def generate_reasoning_mO1(
         self,
         prompt,
         solution_model="llama3.1:latest",
@@ -94,12 +95,27 @@ class ResponseGenerator:
     ):
         """Generate a Step-by-step solution that is based on multi step reasoning analysis"""
         try:
-            solver = ReasoningModel(
+            solver = ReasoningModel_mO1(
                 solution_model=solution_model, critique_model=critique_model
             )
-            final_solution, _ = solver.solve_problem(prompt, max_iterations)
+            response, _ = solver.solve_problem(prompt, max_iterations)
         except Exception as e:
             print(f"Error generating response: {str(e)}")
             return None
 
-        return final_solution
+        return response
+
+    def generate_reasoning_mO1_mini(
+        self,
+        prompt,
+        model="llama3.1:latest",
+    ):
+        """Generate a Step-by-step solution that is based on multi step reasoning analysis"""
+        try:
+            solver = ReasoningModel_mO1_mini(model=model)
+            response = solver.solve_problem(prompt)
+        except Exception as e:
+            print(f"Error generating response: {str(e)}")
+            return None
+
+        return response
