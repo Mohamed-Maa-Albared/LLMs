@@ -6,9 +6,19 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
-from . import ollama_api  # Use relative import
+from src.web_app.ollama_api import OllamaAPI
 
-app = Flask(__name__, template_folder="../templates", static_folder="../static")
+# Get the current directory of the script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define paths for templates and static folders
+template_folder = os.path.join(current_dir, "../templates")
+static_folder = os.path.join(current_dir, "../static")
+
+# Initialize the Flask app with specified folders
+app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+
+api = OllamaAPI()
 
 
 # Serve the homepage from the templates folder
@@ -21,7 +31,7 @@ def home():
 @app.route("/api/models", methods=["GET"])
 def get_models():
     try:
-        models = ollama_api.OllamaAPI().list_ollama_models()
+        models = api.list_ollama_models()
         return jsonify(models)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -41,7 +51,7 @@ def generate_response():
             return jsonify({"error": "Prompt is required"}), 400
 
         # Call the Ollama API to generate a response
-        response = ollama_api.OllamaAPI().generate_response(prompt, model, temperature)
+        response = api.generate_response(prompt, model, temperature)
 
         # Check if response is valid
         if response is None:

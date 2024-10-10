@@ -1,58 +1,42 @@
-import subprocess
-
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate
 
-from .mO1 import ReasoningModel
+from src.utils.config_load import ConfigLoader
+from src.web_app.mO1 import ReasoningModel
+from src.web_app.ollama_models import OllamaModelManager
 
 
 class ResponseGenerator:
-    def __init__(self, base_url="http://localhost:11434/api/generate"):
-        self.base_url = base_url
+    def __init__(self):
+        self.config_loader = ConfigLoader()
+        self.custom_models = self.config_loader.get_section("custom_models")
+        self.api_settings = self.config_loader.get_section("api_settings")
+        self.user_preferences = self.config_loader.get_section("user_preferences")
+
+        self.base_url = self.api_settings.get(
+            "base_url", "http://localhost:11434/api/generate"
+        )
         self.llm = None
+        self.model_manager = OllamaModelManager()
 
-    def list_ollama_models(self):
-        """List all models available in Ollama using the CLI command and return as a list of dictionaries."""
-        try:
-            # Run the 'ollama list' command
-            result = subprocess.run(
-                ["ollama", "list"], capture_output=True, text=True, check=True
-            )
+    def list_ollama_models(self, force_refresh=False):
+        """List all models available in Ollama using the OllamaModelManager."""
+        models = self.model_manager.list_ollama_models(force_refresh)
 
-            # Split the output into lines and process them
-            lines = result.stdout.strip().split("\n")
+        # Add all custom models if they're not already in the list
+        for custom_model in self.custom_models:
+            if not any(model["name"] == custom_model["name"] for model in models):
+                self.model_manager.add_custom_model(custom_model)
+                models.append(custom_model)
 
-            # Skip the header line and create a list of dictionaries for each model
-            models = []
-            for line in lines[1:]:  # Skip the header
-                parts = line.split()  # Split by whitespace
-                if len(parts) >= 7:  # Ensure there are enough parts
-                    model_info = {
-                        "name": parts[0],  # Model name
-                        "id": parts[1],  # Unique identifier
-                        "size": " ".join(parts[2:4]),  # Size of the model
-                        "last_updated": " ".join(parts[4:7]),  # Last updated time
-                    }
-                    models.append(model_info)
-                else:
-                    print(f"Skipping line due to unexpected format: {line}")
+        models = self.model_manager.filter_models(
+            models, name="nomic-embed-text:latest"
+        )
+        models = self.model_manager.sort_models(models)
 
-            mO1 = {
-                "name": "mO1",  # Model name
-                "id": "HAL9000",  # Reference to HAL 9000 from 2001: A Space Odyssey
-                "size": "Infinite",  # Size of the model
-                "last_updated": "Now",  # Last updated time
-            }
-            models.append(mO1)
-            return models
-
-        except subprocess.CalledProcessError as e:
-            print(
-                f"Error running command: {e.stderr.strip()}"
-            )  # Print error message if command fails
-            return []
+        return models
 
     def generate_response(
         self,
@@ -70,7 +54,6 @@ class ResponseGenerator:
                 or self.llm.model != model
                 or bool(self.llm.callback_manager.handlers) != stream_to_console
             ):
-
                 callbacks = (
                     [StreamingStdOutCallbackHandler()] if stream_to_console else []
                 )

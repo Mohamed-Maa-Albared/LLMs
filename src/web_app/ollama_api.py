@@ -4,8 +4,8 @@ from .generate import ResponseGenerator
 
 
 class OllamaAPI:
-    def __init__(self, base_url="http://localhost:11434/api/generate"):
-        self.generator = ResponseGenerator(base_url)
+    def __init__(self):
+        self.generator = ResponseGenerator()
 
     def list_ollama_models(self):
         return self.generator.list_ollama_models()
