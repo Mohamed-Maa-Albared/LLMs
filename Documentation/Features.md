@@ -11,17 +11,15 @@
       - [Description](#description)
       - [User Flow](#user-flow)
       - [Technical Requirements](#technical-requirements)
-    - [Retrieval Augmented Generation](#retrieval-augmented-generation)
+    - [Retrieval Augmented Generation ](#retrieval-augmented-generation-)
       - [Description](#description-1)
     - [PersistentModel](#persistentmodel)
       - [Description](#description-2)
-- [Initialize once](#initialize-once)
-- [Use in your main function](#use-in-your-main-function)
     - [Controller model](#controller-model)
       - [Description](#description-3)
       - [User Flow](#user-flow-1)
       - [Technical Requirements](#technical-requirements-1)
-    - [step by step model (mO model)](#step-by-step-model-mo-model)
+    - [step by step model (mO models) ](#step-by-step-model-mo-models-)
       - [Description](#description-4)
       - [User Flow](#user-flow-2)
 
@@ -45,10 +43,11 @@ Implement a feature that enables users to interact with the model using voice co
 * Develop a new interface for voice mode, ensuring seamless integration with the existing UI.
 * Implement text-to-speech functionality to convey the model's responses in voice format.
 
-### Retrieval Augmented Generation
+### Retrieval Augmented Generation <Done>
 -------------------------------
 
 #### Description
+**TODO: add Proper description of the models that I created**
 To be determined (TBD). This feature will be planned and prioritized based on future requirements and feasibility assessments.
 Idea 1: use a web search API like DuckDuckGO to retrieve relevant results.
 
@@ -65,10 +64,10 @@ class PersistentModel:
     def generate(self, prompt, temperature, max_tokens):
         return self.model.generate(prompt, temperature=temperature, max_tokens=max_tokens)
 
-# Initialize once
+I<initialize once>
 persistent_model = PersistentModel("your_model_name")
 
-# Use in your main function
+<Use in your main function>
 def generate_response(prompt, temperature, max_tokens):
     return persistent_model.generate(prompt, temperature, max_tokens)
 
@@ -92,10 +91,11 @@ Use a fast model 1b or 3b to chose the best tool (model) for the job.
 * Call audio model for voice files.
 
 
-### step by step model (mO model)
+### step by step model (mO models) <Done>
 ---------------
 
 #### Description
+**TODO: add Proper description of the models that I created**
 Use a fast model 1b or 3b to chose the best tool (model) for the job.
 
 #### User Flow
