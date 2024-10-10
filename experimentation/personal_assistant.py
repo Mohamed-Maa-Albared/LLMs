@@ -3,7 +3,7 @@ import time
 
 import ollama
 
-from web_app.ollama_api_alt import OllamaAPI
+from web_app.backup_api.ollama_api_alt import OllamaAPI
 
 
 def timer():

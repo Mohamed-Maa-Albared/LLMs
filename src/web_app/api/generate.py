@@ -4,8 +4,8 @@ from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate
 
 from src.utils.config_load import ConfigLoader
-from src.web_app.mO1 import ReasoningModel
-from src.web_app.ollama_models import OllamaModelManager
+from web_app.reasoning_models.mO1 import ReasoningModel
+from web_app.api.ollama_models import OllamaModelManager
 
 
 class ResponseGenerator:

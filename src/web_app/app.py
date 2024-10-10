@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
-from src.web_app.ollama_api import OllamaAPI
+from web_app.api.ollama_api import OllamaAPI
 
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.abspath(__file__))
