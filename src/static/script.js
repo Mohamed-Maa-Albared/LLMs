@@ -25,6 +25,8 @@ class Conversation {
             temperature: temperature
         };
 
+        console.log(payload)
+
         try {
             const response = await fetch("/api/generate", {
                 method: "POST",
@@ -401,10 +403,13 @@ function sanitizeHTML(str) {
 }
 
 function formatResponseText(text) {
-    // Handle thinking, output, and reflection tags
+    // Decode HTML entities
+    text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+    // Replace <thinking>, <output>, and <reflection> tags with custom HTML
     text = text.replace(/<thinking>([\s\S]*?)<\/thinking>/g, '<div class="thinking"><h4>Thinking:</h4>$1</div>');
     text = text.replace(/<output>([\s\S]*?)<\/output>/g, '<div class="output"><h4>Output:</h4>$1</div>');
-    text = text.replace(/<reflection>([\s\S]*?)<\/reflection>/g, '<div class="reflection"><h4>Reflection:</h4>$1</div>');
+    text = text.replace(/<Reflection>([\s\S]*?)<\/Reflection>/g, '<div class="reflection"><h4>Reflection:</h4>$1</div>');
 
     // Use marked.js to parse Markdown, including code blocks
     return marked.parse(text, {

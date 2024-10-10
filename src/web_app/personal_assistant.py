@@ -84,12 +84,13 @@ print(response)
 import os
 import sys
 
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.web_app.api.ollama_api import OllamaAPI
+
 api = OllamaAPI()
 
 while True:
     prompt = input("Ask")
     if property == "bye":
         break
-    print(api.generate_response(prompt=prompt))
+    print(api.generate_response(model="llama3.1:latest", prompt=prompt))

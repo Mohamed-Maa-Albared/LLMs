@@ -1,6 +1,4 @@
-import subprocess
-
-from .generate import ResponseGenerator
+from web_app.api.generate import ResponseGenerator
 
 
 class OllamaAPI:

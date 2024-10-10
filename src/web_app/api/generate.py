@@ -49,11 +49,19 @@ class ResponseGenerator:
         stream_to_console=False,
     ):
         try:
+            # Debugging output
+            print(
+                f"Initializing LLM with model: {model} and stream_to_console: {stream_to_console}"
+            )
+
             # Create the LLM if it doesn't exist, if the model has changed, or if streaming preference has changed
             if (
                 self.llm is None
                 or self.llm.model != model
-                or bool(self.llm.callback_manager.handlers) != stream_to_console
+                or (
+                    self.llm.callback_manager is not None
+                    and bool(self.llm.callback_manager.handlers) != stream_to_console
+                )
             ):
                 callbacks = (
                     [StreamingStdOutCallbackHandler()] if stream_to_console else []
