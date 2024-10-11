@@ -15,5 +15,7 @@ class OllamaAPI:
             return self.generator.generate_reasoning_mO1(prompt)
         elif model == "mO1_mini":
             return self.generator.generate_reasoning_mO1_mini(prompt)
+        elif model == "mO1.1":
+            return self.generator.generate_reasoning_mO1V2(prompt)
 
         return self.generator.generate_response(prompt, model, temperature, max_tokens)

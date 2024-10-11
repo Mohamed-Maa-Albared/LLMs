@@ -11,6 +11,12 @@
             "id": "HAL8000",
             "size": "Infinite-1",
             "last_updated": "2024-10-10"
+        },
+        {
+            "name": "mO1.1",
+            "id": "HAL9001",
+            "size": "Infinite",
+            "last_updated": "2024-10-11"
         }
     ],
     "api_settings": {

@@ -37,10 +37,6 @@ class ReasoningModel:
         Current Solution:
         {current_solution}
 
-        Please provide your critique in the following format:
-        Strengths:
-        - [List strengths here]
-
         Weaknesses:
         - [List weaknesses here]
 
@@ -73,7 +69,6 @@ class ReasoningModel:
 
     def parse_critique(self, critique_text: str) -> dict:
         critique = {
-            "strengths": [],
             "weaknesses": [],
             "suggestions": [],
             "is_optimal": False,
@@ -82,11 +77,8 @@ class ReasoningModel:
         current_section = None
         for line in critique_text.split("\n"):
             line = line.strip()
-            if line.lower().startswith("strengths:") or line.lower().startswith(
-                "**strengths:"
-            ):
-                current_section = "strengths"
-            elif line.lower().startswith("weaknesses:") or line.lower().startswith(
+
+            if line.lower().startswith("weaknesses:") or line.lower().startswith(
                 "**weaknesses:"
             ):
                 current_section = "weaknesses"

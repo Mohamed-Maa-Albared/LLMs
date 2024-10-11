@@ -7,6 +7,7 @@ from src.utils.config_load import ConfigLoader
 from web_app.api.ollama_models import OllamaModelManager
 from web_app.reasoning_models.mO1 import ReasoningModel as ReasoningModel_mO1
 from web_app.reasoning_models.mO1_mini import ReasoningModel as ReasoningModel_mO1_mini
+from web_app.reasoning_models.mO1V2 import MultiAgentReasoner as ReasoningModel_mO1V2
 
 
 class ResponseGenerator:
@@ -117,6 +118,21 @@ class ResponseGenerator:
         """Generate a Step-by-step solution that is based on multi step reasoning analysis"""
         try:
             solver = ReasoningModel_mO1_mini(model=model)
+            response = solver.solve_problem(prompt)
+        except Exception as e:
+            print(f"Error generating response: {str(e)}")
+            return None
+
+        return response
+
+    def generate_reasoning_mO1V2(
+        self,
+        prompt,
+        model="llama3.1:latest",
+    ):
+        """Generate a Step-by-step solution that is based on multi step reasoning analysis"""
+        try:
+            solver = ReasoningModel_mO1V2(model=model)
             response = solver.solve_problem(prompt)
         except Exception as e:
             print(f"Error generating response: {str(e)}")

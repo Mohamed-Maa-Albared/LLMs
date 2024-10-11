@@ -1,4 +1,3 @@
-"""
 import statistics
 import time
 
@@ -72,7 +71,6 @@ print(f"\nOLLAMA Module Method:")
 print(f"  Min: {min(module_times):.4f} seconds")
 print(f"  Max: {max(module_times):.4f} seconds")
 print(f"  Standard Deviation: {statistics.stdev(module_times):.4f} seconds")
-"""
 
 """"
 from langchain_community.llms import Ollama
@@ -81,15 +79,3 @@ llm = Ollama(model="llama2")
 response = llm.invoke("Explain partial functions in Python")
 print(response)
 """
-import os
-import sys
-
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.web_app.api.ollama_api import OllamaAPI
-api = OllamaAPI()
-
-while True:
-    prompt = input("Ask")
-    if property == "bye":
-        break
-    print(api.generate_response(prompt=prompt))
