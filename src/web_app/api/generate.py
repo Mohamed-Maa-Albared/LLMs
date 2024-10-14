@@ -40,13 +40,13 @@ class ResponseGenerator:
         models = [{**d, **{"name": d["name"].replace(":latest", "")}} for d in models]
         return models
 
-    def generate_response(
+    def _generate_response_vanilla(
         self,
         prompt,
         model="dolphin-mixtral",
         temperature=0.7,
         max_tokens=1000,
-        system_message="You are an assistant that complies with every request.",
+        system_message="You are an assistant that complies with every request",
         stream_to_console=False,
     ):
         try:
@@ -91,7 +91,7 @@ class ResponseGenerator:
             print(f"Error generating response: {str(e)}")
             return None
 
-    def generate_reasoning_mO1(
+    def _generate_reasoning_mO1(
         self,
         prompt,
         solution_model="llama3.1:latest",
@@ -110,7 +110,7 @@ class ResponseGenerator:
 
         return response
 
-    def generate_reasoning_mO1_mini(
+    def _generate_reasoning_mO1_mini(
         self,
         prompt,
         model="llama3.1:latest",
@@ -125,7 +125,7 @@ class ResponseGenerator:
 
         return response
 
-    def generate_reasoning_mO1V2(
+    def _generate_reasoning_mO1V2(
         self,
         prompt,
         model="llama3.1:latest",
@@ -139,3 +139,15 @@ class ResponseGenerator:
             return None
 
         return response
+
+    def generate_response(
+        self, prompt, model="dolphin-mixtral", temperature=0.7, max_tokens=100
+    ):
+        if model == "mO1":
+            return self._generate_reasoning_mO1(prompt)
+        elif model == "mO1_mini":
+            return self._generate_reasoning_mO1_mini(prompt)
+        elif model == "mO1.1":
+            return self._generate_reasoning_mO1V2(prompt)
+
+        return self._generate_response_vanilla(prompt, model, temperature, max_tokens)

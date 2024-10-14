@@ -15,10 +15,9 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain_community.vectorstores import FAISS
+from search import WebSearcher  # Import the WebSearcher class from search.py
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-from search import WebSearcher  # Import the WebSearcher class from search.py
 
 # Set up environment variables
 load_dotenv()
@@ -305,7 +304,7 @@ class SearchAgent:
 async def main():
     # Example usage
     agent = SearchAgent(use_ddg=True, use_google=True, model="llama3.1:latest")
-    query = "Who are the US presidential candidates as of today?"
+    query = "What is happening today in Palestine?"
     response, sources, context = await agent.generate_response(query)
     print("Response:", response)
     print("\nSources:")

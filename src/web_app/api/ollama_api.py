@@ -9,13 +9,6 @@ class OllamaAPI:
         return self.generator.list_ollama_models()
 
     def generate_response(
-        self, prompt, model="dolphin-mixtral", temperature=0.7, max_tokens=100
+        self, prompt, model="dolphin-mixtral", temperature=0.7, max_tokens=1000
     ):
-        if model == "mO1":
-            return self.generator.generate_reasoning_mO1(prompt)
-        elif model == "mO1_mini":
-            return self.generator.generate_reasoning_mO1_mini(prompt)
-        elif model == "mO1.1":
-            return self.generator.generate_reasoning_mO1V2(prompt)
-
         return self.generator.generate_response(prompt, model, temperature, max_tokens)

@@ -5,7 +5,10 @@ import aiohttp
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from langchain_community.tools import DuckDuckGoSearchResults
-from langchain_community.utilities import GoogleSearchAPIWrapper
+from langchain_community.utilities import (
+    DuckDuckGoSearchAPIWrapper,
+    GoogleSearchAPIWrapper,
+)
 
 
 class WebSearcher:
@@ -14,7 +17,8 @@ class WebSearcher:
         self.use_ddg = use_ddg
         self.use_google = use_google
         if use_ddg:
-            self.ddg_tool = DuckDuckGoSearchResults()
+            self.wrapper = DuckDuckGoSearchAPIWrapper(max_results=5)
+            self.ddg_tool = DuckDuckGoSearchResults(api_wrapper=self.wrapper)
         if use_google:
             self.google_search = GoogleSearchAPIWrapper()
 
@@ -96,7 +100,7 @@ async def main():
     searcher = WebSearcher(use_ddg=True, use_google=True)
 
     # Perform a search
-    query = "Who are the candidates for the US presidential election?"
+    query = "What is happening today in Palestine?"
     results = await searcher.search(query, max_results=10)
 
     # Print results
