@@ -21,4 +21,5 @@ dependencies:
       - google-api-python-client
       - langchain-google-community
       - dateparser
+      - selenium beautifulsoup4
 name: llm_env

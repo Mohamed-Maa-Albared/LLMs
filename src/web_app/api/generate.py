@@ -8,6 +8,7 @@ from web_app.api.ollama_models import OllamaModelManager
 from web_app.reasoning_models.mO1 import ReasoningModel as ReasoningModel_mO1
 from web_app.reasoning_models.mO1_mini import ReasoningModel as ReasoningModel_mO1_mini
 from web_app.reasoning_models.mO1V2 import MultiAgentReasoner as ReasoningModel_mO1V2
+from web_app.search_tools.private_search_agent import SearchAgent
 
 
 class ResponseGenerator:
@@ -140,6 +141,21 @@ class ResponseGenerator:
 
         return response
 
+    def _generate_search(
+        self,
+        prompt,
+        model="llama3.1:latest",
+    ):
+        """Generate a Step-by-step solution that is based on multi step reasoning analysis"""
+        try:
+            searcher = SearchAgent(model=model)
+            response = searcher.synchronous_answer_question(prompt)
+        except Exception as e:
+            print(f"Error generating response: {str(e)}")
+            return None
+
+        return response
+
     def generate_response(
         self, prompt, model="dolphin-mixtral", temperature=0.7, max_tokens=100
     ):
@@ -149,5 +165,7 @@ class ResponseGenerator:
             return self._generate_reasoning_mO1_mini(prompt)
         elif model == "mO1.1":
             return self._generate_reasoning_mO1V2(prompt)
+        elif model == "web_search":
+            return self._generate_search(prompt)
 
         return self._generate_response_vanilla(prompt, model, temperature, max_tokens)

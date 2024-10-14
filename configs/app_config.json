@@ -17,6 +17,12 @@
             "id": "HAL9001",
             "size": "Infinite",
             "last_updated": "2024-10-11"
+        },
+        {
+            "name": "web_search",
+            "id": "SER9000",
+            "size": "Infinite",
+            "last_updated": "2024-10-14"
         }
     ],
     "api_settings": {
