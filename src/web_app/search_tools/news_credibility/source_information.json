@@ -1,0 +1,303 @@
+{
+  "news_sources": [
+    {
+      "name": "PBS",
+      "credibility_score": {
+        "net_trust_score": 37,
+        "source": "YouGov survey, 2022"
+      },
+      "political_leaning": "Perceived as left-of-center",
+      "audience_trust": {
+        "democrats": 55,
+        "republicans": 25
+      },
+      "reliability": {
+        "high_trust": [
+          "Educational programming",
+          "Documentaries"
+        ],
+        "low_trust": "Not specifically mentioned"
+      },
+      "editorial_practices": [
+        "Clear separation of news and opinion content",
+        "Commitment to balanced reporting in news segments"
+      ],
+      "digital_presence": [
+        "Active on major social media platforms",
+        "Offers streaming services (PBS Passport)"
+      ],
+      "notes": [
+        "Non-profit, public broadcasting network",
+        "Funded by member stations, donations, and government grants"
+      ]
+    },
+    {
+      "name": "CNN",
+      "credibility_score": {
+        "net_trust_score": -2,
+        "source": "YouGov survey, 2022"
+      },
+      "political_leaning": "Perceived as left-leaning",
+      "audience_trust": {
+        "democrats": 67,
+        "republicans": 19
+      },
+      "reliability": {
+        "high_trust": [
+          "Breaking news coverage",
+          "International reporting"
+        ],
+        "low_trust": [
+          "Political commentary",
+          "Coverage of conservative issues"
+        ]
+      },
+      "editorial_practices": [
+        "Has faced criticism for blending news and opinion in prime-time programming",
+        "Publishes corrections and clarifications when errors are identified"
+      ],
+      "digital_presence": [
+        "Strong presence on social media and digital platforms",
+        "Offers subscription-based streaming service (CNN+)"
+      ],
+      "notes": [
+        "24-hour cable news network",
+        "Owned by Warner Bros. Discovery",
+        "Most politically polarizing outlet with a 96-point difference in net trust between Democrats and Republicans"
+      ]
+    },
+    {
+      "name": "Fox News",
+      "credibility_score": {
+        "net_trust_score": "Not provided in YouGov survey"
+      },
+      "political_leaning": "Perceived as right-leaning",
+      "audience_trust": {
+        "republicans": 65,
+        "democrats": 19
+      },
+      "reliability": {
+        "high_trust": [
+          "Coverage of conservative political issues",
+          "Economic news"
+        ],
+        "low_trust": [
+          "Climate change reporting",
+          "Coverage of liberal policies"
+        ]
+      },
+      "editorial_practices": [
+        "Clear separation between news reporting and opinion programming",
+        "Has faced criticism for blending news and opinion in some shows"
+      ],
+      "digital_presence": [
+        "Strong presence on social media",
+        "Offers streaming service (Fox Nation)"
+      ],
+      "notes": [
+        "24-hour cable news network",
+        "Owned by Fox Corporation",
+        "Republicans have a net trust 62 points higher than Democrats for Fox News"
+      ]
+    },
+    {
+      "name": "Reuters",
+      "credibility_score": {
+        "description": "Considered one of America's most trusted, nonpartisan news sources"
+      },
+      "political_leaning": "Generally perceived as neutral",
+      "audience_trust": "High trust across political spectrum",
+      "reliability": {
+        "high_trust": [
+          "Financial news",
+          "International reporting",
+          "Fact-based journalism"
+        ],
+        "low_trust": "Not specifically mentioned, generally considered reliable across topics"
+      },
+      "editorial_practices": [
+        "Known for strict separation of news and opinion content",
+        "Adheres to 'Trust Principles' emphasizing integrity, independence, and freedom from bias"
+      ],
+      "digital_presence": [
+        "Strong presence on digital platforms",
+        "Offers professional services and tools for businesses"
+      ],
+      "notes": [
+        "International news organization",
+        "Focuses on business and financial news",
+        "Used as a source by many other news outlets"
+      ]
+    },
+    {
+      "name": "BBC",
+      "credibility_score": {
+        "net_trust_score": 25,
+        "source": "YouGov survey, 2024"
+      },
+      "political_leaning": "Generally perceived as center to center-left",
+      "audience_trust": {
+        "international": "High trust across political spectrum",
+        "uk": "More trusted by left-leaning audiences"
+      },
+      "reliability": {
+        "high_trust": [
+          "International news coverage",
+          "Investigative reporting"
+        ],
+        "low_trust": "Coverage of UK domestic politics (accusations of bias from both left and right)"
+      },
+      "editorial_practices": [
+        "Strong emphasis on impartiality and balanced reporting",
+        "Clear separation of news and opinion content"
+      ],
+      "digital_presence": [
+        "Strong presence on social media and digital platforms",
+        "Offers BBC iPlayer for streaming content"
+      ],
+      "notes": [
+        "Public service broadcaster in the UK",
+        "Funded by license fee in the UK, government grants for international services"
+      ]
+    },
+    {
+      "name": "Al Jazeera",
+      "credibility_score": {
+        "net_trust_score": 60,
+        "source": "YouGov survey, 2024"
+      },
+      "political_leaning": {
+        "western_context": "Perceived as left-leaning",
+        "middle_east": "Seen as pro-Arab"
+      },
+      "audience_trust": "Large gap between general public trust and trust among regular users",
+      "reliability": {
+        "high_trust": [
+          "Middle East coverage",
+          "International news"
+        ],
+        "low_trust": "Coverage of issues related to Qatar's foreign policy"
+      },
+      "editorial_practices": [
+        "Claims editorial independence",
+        "Has faced accusations of bias in regional reporting"
+      ],
+      "digital_presence": [
+        "Strong online presence with multimedia content",
+        "Active on social media platforms"
+      ],
+      "notes": [
+        "Qatar-based international news organization",
+        "Known for coverage of Middle Eastern affairs and alternative perspectives on global issues"
+      ]
+    },
+    {
+      "name": "France 24",
+      "credibility_score": {
+        "description": "Not provided in YouGov survey"
+      },
+      "political_leaning": "Generally perceived as center to center-left",
+      "audience_trust": "Well-regarded internationally, particularly for European and African news",
+      "reliability": {
+        "high_trust": [
+          "European affairs",
+          "African news coverage"
+        ],
+        "low_trust": "Not specifically mentioned"
+      },
+      "editorial_practices": [
+        "Aims for balanced reporting with a French perspective on world events"
+      ],
+      "digital_presence": [
+        "Offers content in French, English, Arabic, and Spanish",
+        "Active on social media and digital platforms"
+      ],
+      "notes": [
+        "French state-owned international news channel",
+        "Focuses on providing a French perspective on world events"
+      ]
+    },
+    {
+      "name": "Deutsche Welle (DW)",
+      "credibility_score": {
+        "description": "Not provided in YouGov survey"
+      },
+      "political_leaning": "Generally perceived as center to center-left",
+      "audience_trust": "Well-regarded internationally, particularly for European news",
+      "reliability": {
+        "high_trust": [
+          "European affairs",
+          "International news"
+        ],
+        "low_trust": "Not specifically mentioned"
+      },
+      "editorial_practices": [
+        "Emphasizes journalistic independence and balanced reporting"
+      ],
+      "digital_presence": [
+        "Offers content in multiple languages",
+        "Strong presence on digital platforms and social media"
+      ],
+      "notes": [
+        "German public international broadcaster",
+        "Focuses on providing a German perspective on world events"
+      ]
+    },
+    {
+      "name": "NHK World",
+      "credibility_score": {
+        "description": "Not provided in YouGov survey"
+      },
+      "political_leaning": "Generally perceived as centrist",
+      "audience_trust": "Well-regarded for Asian news coverage",
+      "reliability": {
+        "high_trust": [
+          "Asian affairs",
+          "Technology news"
+        ],
+        "low_trust": "Not specifically mentioned"
+      },
+      "editorial_practices": [
+        "Known for factual reporting with a focus on Japanese and Asian perspectives"
+      ],
+      "digital_presence": [
+        "Offers content in multiple languages",
+        "Active on digital platforms and social media"
+      ],
+      "notes": [
+        "International broadcasting service of NHK, Japan's public broadcaster",
+        "Provides news and cultural programming from a Japanese perspective"
+      ]
+    },
+    {
+      "name": "The Guardian",
+      "credibility_score": {
+        "description": "Net trust score not provided in YouGov survey"
+      },
+      "political_leaning": "Perceived as left-leaning",
+      "audience_trust": {
+        "high": "Liberal and center-left audiences",
+        "low": "Conservative audiences"
+      },
+      "reliability": {
+        "high_trust": [
+          "Investigative journalism",
+          "Environmental reporting"
+        ],
+        "low_trust": "Coverage of conservative politics"
+      },
+      "editorial_practices": [
+        "Known for investigative journalism and liberal editorial stance",
+        "Clear labeling of opinion content"
+      ],
+      "digital_presence": [
+        "Strong online presence with multimedia content",
+        "Active on social media platforms"
+      ],
+      "notes": [
+        "UK-based newspaper with significant international readership",
+        "Operates under a trust ownership model"
+      ]
+    }
+  ]
+}

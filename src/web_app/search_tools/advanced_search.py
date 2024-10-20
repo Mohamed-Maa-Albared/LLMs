@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class AdvancedSearchTool:
-    def __init__(self, max_results=5):
+    def __init__(self, max_results=8):
         self.max_results = max_results
         self.base_url = "https://duckduckgo.com/html/"
         self.chrome_options = Options()
