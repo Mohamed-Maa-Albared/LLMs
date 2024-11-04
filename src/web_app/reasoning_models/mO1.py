@@ -7,7 +7,7 @@ from langchain_community.llms import Ollama
 
 class ReasoningModel:
     def __init__(
-        self, solution_model="llama3.1:latest", critique_model="llama3.1:latest"
+        self, solution_model="llama3.2:latest", critique_model="llama3.2:latest"
     ):
         self.solution_llm = Ollama(model=solution_model)
         self.critique_llm = Ollama(model=critique_model)

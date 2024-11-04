@@ -6,7 +6,7 @@ from langchain_community.llms import Ollama
 
 
 class ReasoningModel:
-    def __init__(self, model="llama3.1:latest"):
+    def __init__(self, model="llama3.2:latest"):
         self.llm = Ollama(model=model)
 
         self.template = """

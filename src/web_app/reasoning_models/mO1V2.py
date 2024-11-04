@@ -4,7 +4,7 @@ from langchain_community.llms import Ollama
 
 
 class Agent:
-    def __init__(self, model="llama3.1:latest"):
+    def __init__(self, model="llama3.2:latest"):
         self.llm = Ollama(model=model)
 
     def create_chain(self, template, input_variables):

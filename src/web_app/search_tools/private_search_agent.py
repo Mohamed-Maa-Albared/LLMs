@@ -97,14 +97,12 @@ class SearchAgent:
 
         orgs_info = []
         orgs = {}
-        add_sorces = False
+        add_sources = False  # TODO: Enhance the source adding to make the model, not focus too much on that but take the most important info from it
         context = "\n".join([result["full_text"] for result in search_results])
         formatted_links = "\n".join(
             ["\n" + result["link"] for result in search_results]
         )
-        if (
-            add_sorces
-        ):  # TODO: Enhance the source adding to make the model, not focus too much on that but take the most important info from it
+        if add_sources:
             orgs = self.analyzer.match_links_to_orgs(formatted_links)
         print("Matched organizations that we have information about:", orgs)  # debug
         for org in orgs:
