@@ -22,4 +22,5 @@ dependencies:
       - langchain-google-community
       - dateparser
       - selenium beautifulsoup4
+      - pillow
 name: llm_env

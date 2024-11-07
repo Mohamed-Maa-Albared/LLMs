@@ -312,9 +312,9 @@ form.addEventListener("submit", async (e) => {
     if (includeHistory) {
         promptToSend = conversation.messages
             .filter(msg => msg.speaker !== "Response Time")
-            .map(msg => `${msg.speaker}: ${msg.content}`).join('\n') + `\nYou: ${prompt}`;
+            .map(msg => `${msg.speaker}: ${msg.content}`).join('\n') + `\nUser: ${prompt}`;
     } else {
-        promptToSend = `You: ${prompt}`;
+        promptToSend = `User: ${prompt}`;
     }
 
     conversation.generateResponse(promptToSend, selectedModel, temperature);
