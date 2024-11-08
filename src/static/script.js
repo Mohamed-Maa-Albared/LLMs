@@ -93,6 +93,7 @@ const deletePopup = document.getElementById("delete-popup");
 const cancelPopupBtn = document.getElementById("cancel-popup");
 const confirmPopupBtn = document.getElementById("confirm-popup");
 const promptInput = document.getElementById("prompt");
+const screenshotBtn = document.getElementById('screenshot-btn');
 
 // Load conversations from localStorage
 function loadConversationsFromLocalStorage() {
@@ -455,3 +456,180 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => console.error("Error fetching models:", error));
 });
+
+function addMultiActionButton() {
+    const container = document.createElement('div');
+    container.className = 'multi-action-container';
+
+    // Main button
+    const button = document.createElement('button');
+    button.id = 'multi-action-btn';
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    `;
+
+    // Dropdown menu
+    const dropdown = document.createElement('div');
+    dropdown.className = 'action-dropdown';
+    dropdown.innerHTML = `
+        <div class="action-option" data-action="file">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+            </svg>
+            <span>Upload File</span>
+        </div>
+        <div class="action-option" data-action="image">
+            <svg viewBox="0 0 24 24">
+                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/>
+            </svg>
+            <span>Upload Image</span>
+        </div>
+        <div class="action-option" data-action="screenshot">
+            <svg viewBox="0 0 24 24">
+                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/>
+            </svg>
+            <span>Take Screenshot</span>
+        </div>
+        <div class="action-option" data-action="voice">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+            </svg>
+            <span>Record Voice</span>
+        </div>
+    `;
+
+    // Hidden file inputs
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.className = 'hidden-input';
+    fileInput.id = 'file-input';
+
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.className = 'hidden-input';
+    imageInput.id = 'image-input';
+
+    container.appendChild(button);
+    container.appendChild(dropdown);
+    container.appendChild(fileInput);
+    container.appendChild(imageInput);
+
+    return container;
+}
+
+// Function to initialize the multi-action button
+function initializeMultiActionButton() {
+
+    const multiActionBtn = document.getElementById('multi-action-btn');
+    const dropdown = document.querySelector('.action-dropdown');
+    const fileInput = document.getElementById('file-input');
+    const imageInput = document.getElementById('image-input');
+
+    // Verify elements are found
+    if (!multiActionBtn || !dropdown) {
+        console.error('Required elements not found:', {
+            multiActionBtn: !!multiActionBtn,
+            dropdown: !!dropdown
+        });
+        return;
+    }
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+
+    // Toggle dropdown with logging
+    multiActionBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent immediate closing
+        dropdown.classList.toggle('show');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.multi-action-container')) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // Handle option clicks with logging
+    dropdown.addEventListener('click', async (e) => {
+        const option = e.target.closest('.action-option');
+        if (!option) return;
+
+        const action = option.dataset.action;
+
+        switch (action) {
+            case 'file':
+                fileInput.click();
+                break;
+            case 'image':
+                imageInput.click();
+                break;
+            case 'screenshot':
+                try {
+                    const canvas = await html2canvas(document.body);
+                    const link = document.createElement('a');
+                    link.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:]/g, '-')}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (error) {
+                    console.error('Screenshot failed:', error);
+                }
+                break;
+            case 'voice':
+                if (!mediaRecorder) {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+
+                        mediaRecorder.ondataavailable = (e) => {
+                            audioChunks.push(e.data);
+                        };
+
+                        mediaRecorder.onstop = () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            const link = document.createElement('a');
+                            link.href = audioUrl;
+                            link.download = `recording-${new Date().toISOString()}.wav`;
+                            link.click();
+                            audioChunks = [];
+                        };
+
+                        mediaRecorder.start();
+                        option.innerHTML += '<span class="recording-indicator">Recording...</span>';
+                    } catch (error) {
+                        console.error('Failed to start recording:', error);
+                    }
+                } else {
+                    mediaRecorder.stop();
+                    mediaRecorder = null;
+                    const indicator = option.querySelector('.recording-indicator');
+                    if (indicator) indicator.remove();
+                }
+                break;
+        }
+
+        dropdown.classList.remove('show');
+    });
+
+    // Handle file inputs
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            console.log('File selected:', file);
+        }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            console.log('Image selected:', file);
+        }
+    });
+}
+
+// Initialize when the DOM is ready
+document.addEventListener('DOMContentLoaded', initializeMultiActionButton);

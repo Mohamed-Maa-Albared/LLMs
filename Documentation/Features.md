@@ -22,6 +22,9 @@
     - [step by step model (mO models) ](#step-by-step-model-mo-models-)
       - [Description](#description-4)
       - [User Flow](#user-flow-2)
+    - [Screen Sharing straight to the model that could answer my questions using voice](#screen-sharing-straight-to-the-model-that-could-answer-my-questions-using-voice)
+      - [Description](#description-5)
+      - [User Flow](#user-flow-3)
 
 ## Features to be Added
 ------------------------
@@ -97,6 +100,16 @@ Use a fast model 1b or 3b to chose the best tool (model) for the job.
 #### Description
 **TODO: add Proper description of the models that I created**
 Use a fast model 1b or 3b to chose the best tool (model) for the job.
+
+#### User Flow
+1. It should be the same without any interruptions to the UX.
+
+### Screen Sharing straight to the model that could answer my questions using voice 
+---------------
+
+#### Description
+**TODO: add Proper description of the models that I created**
+Press a button to share my screen with the model and then ask questions using my voice or maybe some text and it answers the questions
 
 #### User Flow
 1. It should be the same without any interruptions to the UX.
