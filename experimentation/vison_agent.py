@@ -5,10 +5,10 @@ response = ollama.chat(
     messages=[
         {
             "role": "user",
-            "content": "What is in this image?",
-            "images": ["experimentation/imgs/img1.jpg"],
+            "content": "What is in this image, How does the person look, Where do you think the picture was taken?, Give me a detailed answer",
+            "images": ["src/uploads/images/Mo.jpg"],
         }
     ],
 )
 
-print(response)
+print(response["message"]["content"])

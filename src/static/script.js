@@ -461,16 +461,18 @@ function addMultiActionButton() {
     const container = document.createElement('div');
     container.className = 'multi-action-container';
 
-    // Main button
+    // Main button setup
     const button = document.createElement('button');
     button.id = 'multi-action-btn';
+    button.type = 'button';
+    button.title = 'Add content';
     button.innerHTML = `
         <svg viewBox="0 0 24 24">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
     `;
 
-    // Dropdown menu
+    // Dropdown setup
     const dropdown = document.createElement('div');
     dropdown.className = 'action-dropdown';
     dropdown.innerHTML = `
@@ -488,8 +490,8 @@ function addMultiActionButton() {
         </div>
         <div class="action-option" data-action="screenshot">
             <svg viewBox="0 0 24 24">
-                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/>
-            </svg>
+                <path d="M3.46447 3.46447C2 4.92893 2 7.28595 2 12C2 16.714 2 19.0711 3.46447 20.5355C4.92893 22 7.28595 22 12 22C16.714 22 19.0711 22 20.5355 20.5355C22 19.0711 22 16.714 22 12C22 7.28595 22 4.92893 20.5355 3.46447C19.0711 2 16.714 2 12 2C7.28595 2 4.92893 2 3.46447 3.46447ZM7.25 12C7.25 9.37665 9.37665 7.25 12 7.25C14.6234 7.25 16.75 9.37665 16.75 12C16.75 14.6234 14.6234 16.75 12 16.75C9.37665 16.75 7.25 14.6234 7.25 12ZM8.75 12C8.75 10.2051 10.2051 8.75 12 8.75C13.7949 8.75 15.25 10.2051 15.25 12C15.25 13.7949 13.7949 15.25 12 15.25C10.2051 15.25 8.75 13.7949 8.75 12Z" />
+                </svg>
             <span>Take Screenshot</span>
         </div>
         <div class="action-option" data-action="voice">
@@ -503,6 +505,7 @@ function addMultiActionButton() {
     // Hidden file inputs
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
+    fileInput.accept = '*/*'; // Accept any file type
     fileInput.className = 'hidden-input';
     fileInput.id = 'file-input';
 
@@ -516,6 +519,10 @@ function addMultiActionButton() {
     container.appendChild(dropdown);
     container.appendChild(fileInput);
     container.appendChild(imageInput);
+
+    // Insert the container into the form
+    const promptForm = document.getElementById('prompt-form');
+    promptForm.insertBefore(container, promptForm.firstChild);
 
     return container;
 }
@@ -532,11 +539,11 @@ const CONFIG = {
 
 function initializeMultiActionButton() {
     console.log('Initializing multi-action button');
-
-    const multiActionBtn = document.getElementById('multi-action-btn');
-    const dropdown = document.querySelector('.action-dropdown');
-    const fileInput = document.getElementById('file-input');
-    const imageInput = document.getElementById('image-input');
+    const container = addMultiActionButton();
+    const multiActionBtn = container.querySelector('#multi-action-btn');
+    const dropdown = container.querySelector('.action-dropdown');
+    const fileInput = container.querySelector('#file-input');
+    const imageInput = container.querySelector('#image-input');
 
     if (!multiActionBtn || !dropdown) {
         console.error('Required elements not found:', {
@@ -615,6 +622,17 @@ function initializeMultiActionButton() {
         }
     });
 
+    // Helper function to get the current timestamp in YYYY-MM-DD_HH-MM-SS format
+    function getCurrentTimestamp() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    }
     // Handle dropdown options
     dropdown.addEventListener('click', async (e) => {
         const option = e.target.closest('.action-option');
@@ -634,7 +652,8 @@ function initializeMultiActionButton() {
                     const canvas = await html2canvas(document.body);
                     canvas.toBlob(async (blob) => {
                         try {
-                            const file = new File([blob], 'screenshot.png', { type: 'image/png' });
+                            const timestamp = getCurrentTimestamp();
+                            const file = new File([blob], `screenshot_${timestamp}.png`, { type: 'image/png' });
                             const result = await uploadFile(file, 'screenshot');
                             console.log('Screenshot uploaded:', result);
                         } catch (error) {
@@ -659,7 +678,8 @@ function initializeMultiActionButton() {
                         mediaRecorder.onstop = async () => {
                             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                             try {
-                                const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                                const timestamp = getCurrentTimestamp();
+                                const file = new File([audioBlob], `recording_${timestamp}.wav`, { type: 'audio/wav' });
                                 const result = await uploadFile(file, 'voice');
                                 console.log('Voice recording uploaded:', result);
                             } catch (error) {
