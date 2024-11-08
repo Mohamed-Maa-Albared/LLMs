@@ -520,15 +520,24 @@ function addMultiActionButton() {
     return container;
 }
 
-// Function to initialize the multi-action button
+// Configuration object for file handling
+const CONFIG = {
+    uploadEndpoints: {
+        file: '/api/upload/files',
+        image: '/api/upload/images',
+        screenshot: '/api/upload/screenshots',
+        voice: '/api/upload/voice'
+    }
+};
+
 function initializeMultiActionButton() {
+    console.log('Initializing multi-action button');
 
     const multiActionBtn = document.getElementById('multi-action-btn');
     const dropdown = document.querySelector('.action-dropdown');
     const fileInput = document.getElementById('file-input');
     const imageInput = document.getElementById('image-input');
 
-    // Verify elements are found
     if (!multiActionBtn || !dropdown) {
         console.error('Required elements not found:', {
             multiActionBtn: !!multiActionBtn,
@@ -540,9 +549,36 @@ function initializeMultiActionButton() {
     let mediaRecorder = null;
     let audioChunks = [];
 
-    // Toggle dropdown with logging
+    // Handle file uploads
+    async function uploadFile(file, type) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(CONFIG.uploadEndpoints[type], {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Upload failed');
+            }
+
+            const result = await response.json();
+            console.log(`${type} uploaded successfully:`, result);
+            return result;
+        } catch (error) {
+            console.error(`${type} upload failed:`, error);
+            throw error;
+        }
+    }
+
+    // Toggle dropdown
     multiActionBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent immediate closing
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Button clicked');
         dropdown.classList.toggle('show');
     });
 
@@ -553,7 +589,33 @@ function initializeMultiActionButton() {
         }
     });
 
-    // Handle option clicks with logging
+    // Handle file input
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                const result = await uploadFile(file, 'file');
+                console.log('File uploaded:', result);
+            } catch (error) {
+                alert('Failed to upload file: ' + error.message);
+            }
+        }
+    });
+
+    // Handle image input
+    imageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                const result = await uploadFile(file, 'image');
+                console.log('Image uploaded:', result);
+            } catch (error) {
+                alert('Failed to upload image: ' + error.message);
+            }
+        }
+    });
+
+    // Handle dropdown options
     dropdown.addEventListener('click', async (e) => {
         const option = e.target.closest('.action-option');
         if (!option) return;
@@ -570,12 +632,18 @@ function initializeMultiActionButton() {
             case 'screenshot':
                 try {
                     const canvas = await html2canvas(document.body);
-                    const link = document.createElement('a');
-                    link.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:]/g, '-')}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            const file = new File([blob], 'screenshot.png', { type: 'image/png' });
+                            const result = await uploadFile(file, 'screenshot');
+                            console.log('Screenshot uploaded:', result);
+                        } catch (error) {
+                            alert('Failed to upload screenshot: ' + error.message);
+                        }
+                    });
                 } catch (error) {
                     console.error('Screenshot failed:', error);
+                    alert('Failed to take screenshot: ' + error.message);
                 }
                 break;
             case 'voice':
@@ -588,13 +656,15 @@ function initializeMultiActionButton() {
                             audioChunks.push(e.data);
                         };
 
-                        mediaRecorder.onstop = () => {
+                        mediaRecorder.onstop = async () => {
                             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                            const audioUrl = URL.createObjectURL(audioBlob);
-                            const link = document.createElement('a');
-                            link.href = audioUrl;
-                            link.download = `recording-${new Date().toISOString()}.wav`;
-                            link.click();
+                            try {
+                                const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                                const result = await uploadFile(file, 'voice');
+                                console.log('Voice recording uploaded:', result);
+                            } catch (error) {
+                                alert('Failed to upload voice recording: ' + error.message);
+                            }
                             audioChunks = [];
                         };
 
@@ -602,6 +672,7 @@ function initializeMultiActionButton() {
                         option.innerHTML += '<span class="recording-indicator">Recording...</span>';
                     } catch (error) {
                         console.error('Failed to start recording:', error);
+                        alert('Failed to start recording: ' + error.message);
                     }
                 } else {
                     mediaRecorder.stop();
@@ -615,20 +686,7 @@ function initializeMultiActionButton() {
         dropdown.classList.remove('show');
     });
 
-    // Handle file inputs
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            console.log('File selected:', file);
-        }
-    });
-
-    imageInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            console.log('Image selected:', file);
-        }
-    });
+    console.log('Multi-action button initialized');
 }
 
 // Initialize when the DOM is ready
