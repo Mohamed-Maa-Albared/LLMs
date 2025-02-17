@@ -70,7 +70,6 @@ def generate_response():
 
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
-
         response = api.generate_response(prompt, model, temperature)
         if response is None:
             return jsonify({"error": "Failed to generate response"}), 500

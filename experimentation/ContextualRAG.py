@@ -28,7 +28,7 @@ class ContextualRAG:
 
     def __init__(
         self,
-        document_dir: str = "documents",
+        document_dir: str = "RAG_document_store",
         db_dir: str = "vectorstore",
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
