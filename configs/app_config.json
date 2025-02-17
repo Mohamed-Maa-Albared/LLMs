@@ -1,0 +1,38 @@
+{
+    "custom_models": [
+        {
+            "name": "mO1",
+            "id": "HAL9000",
+            "size": "Infinite",
+            "last_updated": "2024-10-02"
+        },
+        {
+            "name": "mO1_mini",
+            "id": "HAL8000",
+            "size": "Infinite-1",
+            "last_updated": "2024-10-10"
+        },
+        {
+            "name": "mO1.1",
+            "id": "HAL9001",
+            "size": "Infinite",
+            "last_updated": "2024-10-11"
+        },
+        {
+            "name": "web_search",
+            "id": "SER9000",
+            "size": "Infinite",
+            "last_updated": "2024-10-14"
+        }
+    ],
+    "api_settings": {
+        "base_url": "http://localhost:11434/api/generate",
+        "timeout": 30,
+        "max_retries": 3
+    },
+    "user_preferences": {
+        "default_model": "mO1",
+        "theme": "dark",
+        "language": "en"
+    }
+}

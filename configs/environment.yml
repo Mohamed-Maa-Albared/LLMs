@@ -1,0 +1,26 @@
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - pip:
+      - requests
+      - flask
+      - ollama
+      - langchain
+      - langchain-community
+      - langchain-chroma
+      - unstructured
+      - chromadb
+      - faiss-cpu
+      - google-search-results
+      - nltk
+      - scikit-learn
+      - bs4
+      - aiohttp
+      - duckduckgo-search
+      - google-api-python-client
+      - langchain-google-community
+      - dateparser
+      - selenium beautifulsoup4
+      - pillow
+name: llm_env

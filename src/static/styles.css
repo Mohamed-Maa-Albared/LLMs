@@ -1,0 +1,888 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f5f7fa;
+    --text-color: #333;
+    --bg-color: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --code-bg-color: #e7f3ff;
+}
+
+/* Dark mode variables */
+body.dark-mode {
+    --primary-color: #fb4b4b;
+    --secondary-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --bg-color: #121212;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --code-bg-color: #1c1c1c;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+}
+
+.container {
+    width: 95%;
+    max-width: 1400px;
+    background-color: var(--bg-color);
+    border-radius: 30px;
+    box-shadow: 0 20px 40px var(--shadow-color);
+    display: flex;
+    overflow: hidden;
+    height: 90vh;
+}
+
+.left-panel {
+    width: 30%;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 30px;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.right-panel {
+    width: 70%;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    padding-top: 20px;
+}
+
+.right-panel h1 {
+    margin-bottom: 20px;
+}
+
+h1,
+h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.left-panel h2 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+#conversation-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#conversation-list li {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 15px;
+    background-color: var(--bg-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-color);
+}
+
+#conversation-list li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+/* Style the entire checkbox container to move both the label and checkbox */
+.checkbox-container {
+    margin-bottom: 0px;
+    /* Adjust to your preference */
+    display: flex;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+#conversation-history {
+    list-style-type: none;
+    padding: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+#conversation-history li {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    background-color: var(--secondary-color);
+    transition: all 0.3s ease;
+    color: var(--text-color);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.message-content {
+    max-height: none;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.message-content.collapsed {
+    max-height: 100px;
+    position: relative;
+}
+
+.message-content.collapsed::after {
+    content: "...";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: var(--secondary-color);
+    padding: 0 5px;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.collapse-btn:hover {
+    opacity: 0.8;
+}
+
+#prompt-form {
+    display: flex;
+    margin-top: auto;
+    align-items: stretch;
+    /* Changed from center to stretch */
+    gap: 10px;
+}
+
+#prompt {
+    flex-grow: 1;
+    padding: 15px;
+    font-size: 16px;
+    border: none;
+    resize: none;
+    border-radius: 15px 0 0 15px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    margin-right: 0;
+    min-height: 54px;
+    /* Added to match button height */
+    box-sizing: border-box;
+}
+
+
+#prompt-form button[type="submit"] {
+    padding: 0 30px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0 15px 15px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 65px;
+    /* Fixed height to match textarea */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#prompt-form button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+#response {
+    background-color: var(--secondary-color);
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 30px;
+    min-height: 100px;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    white-space: pre-wrap;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    color: var(--text-color);
+}
+
+#response h1,
+#response h2,
+#response h3,
+#response h4,
+#response h5,
+#response h6 {
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: var(--primary-color);
+}
+
+#response strong {
+    font-weight: 700;
+}
+
+#response em {
+    font-style: italic;
+}
+
+#response ul,
+#response ol {
+    padding-left: 30px;
+    margin-bottom: 1em;
+}
+
+#response li {
+    margin-bottom: 0.5em;
+}
+
+.typing {
+    font-weight: bold;
+    color: var(--primary-color);
+    display: inline-block;
+}
+
+.typing::after {
+    content: '...';
+    animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+    0% {
+        content: '.';
+    }
+
+    33% {
+        content: '..';
+    }
+
+    66% {
+        content: '...';
+    }
+}
+
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-in.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#new-conversation-btn,
+#dark-mode-toggle {
+    margin-bottom: 15px;
+    width: 100%;
+    border-radius: 15px;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#new-conversation-btn:hover,
+#dark-mode-toggle:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.delete-btn,
+.rename-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+}
+
+.delete-btn:hover,
+.rename-btn:hover {
+    text-decoration: underline;
+}
+
+.conversation-name {
+    cursor: text;
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--text-color);
+}
+
+.conversation-name:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.conversation-name:focus {
+    outline: none;
+    background-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* Styles for the history toggle */
+.right-panel label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.right-panel input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* ... (previous CSS remains unchanged) ... */
+
+/* Updated Settings shelf styles */
+#settings-shelf {
+    position: fixed;
+    top: 50px;
+    right: 0;
+    width: 50px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+#settings-icon {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    margin-bottom: 40px;
+    transition: all 0.3s ease;
+}
+
+#settings-content {
+    position: absolute;
+    top: 0;
+    right: -300px;
+    /* Initially hidden */
+    width: 250px;
+    height: auto;
+    background-color: var(--bg-color);
+    border-radius: 15px 0 0 15px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    padding: 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#settings-shelf.open #settings-content {
+    right: 0;
+    top: 60px;
+    /* Slide out the shelf */
+}
+
+#settings-content h2 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+
+#settings-content hr {
+    width: 60%;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    margin: 20px auto;
+    /* Center the line */
+}
+
+/* Dark mode toggle button */
+#dark-mode-toggle {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#dark-mode-toggle:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Mode slider styles */
+.mode-slider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.mode-slider span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--secondary-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--bg-color);
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--primary-color);
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+#settings-shelf.open #settings-icon {
+    transform: rotate(90deg);
+}
+
+#settings-shelf:hover #settings-icon {
+    transform: rotate(-90deg) scale(1.1);
+}
+
+/* Smooth animation for the sliding shelf */
+#settings-shelf.open {
+    transition: all 0.3s ease-in-out;
+}
+
+
+/* New styles for model selector and mode slider */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.model-selector {
+    display: flex;
+    align-items: center;
+}
+
+.model-selector label {
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+#model-select {
+    padding: 12px 18px;
+    font-size: 14px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#model-select:hover {
+    background-color: var(--secondary-color);
+}
+
+.mode-slider {
+    display: flex;
+    align-items: center;
+}
+
+.mode-slider span {
+    margin: 0 10px;
+    font-weight: 600;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--secondary-color);
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--bg-color);
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: var(--primary-color);
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Pop-up Styling */
+.popup {
+    display: none;
+    /* Hidden by default */
+    position: absolute;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 10px 16px;
+    border-radius: 12px;
+    /* More rounded edges for a minimalist feel */
+    box-shadow: 0 2px 10px var(--shadow-color);
+    /* Soft shadow */
+    width: 200px;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+    /* Start with a slight offset */
+}
+
+/* Make the pop-up visible */
+.popup.show {
+    opacity: 1;
+    transform: translateY(0);
+    /* Bring the pop-up into place */
+}
+
+/* Popup Text */
+.popup p {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Popup Button Styling */
+.popup-button {
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    margin: 0 5px;
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    font-size: 12px;
+}
+
+.popup-button.danger {
+    background-color: #fb4b4b;
+}
+
+.popup-button.cancel {
+    background-color: #4a90e2;
+}
+
+.popup-button:hover {
+    opacity: 0.9;
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.blur {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+    /* Smooth transition for blurring */
+}
+
+.response-time {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 0.7rem;
+    /* Add some space between the element and the border */
+    font-size: 0.75rem;
+    color: gray;
+    box-sizing: border-box;
+    /* Include padding and border in the width/height calculation */
+}
+
+
+pre {
+    position: relative;
+    background-color: var(--code-bg-color);
+    border-radius: 15px;
+    padding: 15px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.copy-btn {
+    position: absolute;
+    /* Position it absolutely within the relative parent */
+    top: 10px;
+    /* Adjust this value to move it down from the top */
+    right: 10px;
+    /* Adjust this value to move it left or right */
+    width: 30px;
+    /* Width of the button */
+    height: 30px;
+    /* Height of the button */
+    cursor: pointer;
+    opacity: 0.8;
+    /* Slightly more opaque for visibility */
+    transition: opacity 0.3s ease;
+    background-color: var(--primary-color);
+    /* Use primary color from theme */
+    border: none;
+    /* Remove default border */
+    border-radius: 15px;
+    /* Rounded corners */
+}
+
+.copy-btn:hover {
+    opacity: 1;
+    /* Full opacity on hover */
+}
+
+.copy-btn.copied {
+    opacity: 1;
+    filter: hue-rotate(120deg);
+    /* Change color when copied */
+}
+
+.copy-btn img {
+    position: absolute;
+    /* Position it absolutely within the button */
+    top: 50%;
+    /* Center vertically within the button */
+    left: 50%;
+    /* Center horizontally within the button */
+    width: 20px;
+    /* Size of the icon */
+    height: auto;
+    /* Maintain aspect ratio */
+    transform: translate(-50%, -50%);
+    /* Adjust for perfect centering */
+}
+
+
+.multi-action-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Main button styling */
+#multi-action-btn {
+    width: 54px;
+    height: 54px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#multi-action-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+#multi-action-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+/* Dropdown menu */
+.action-dropdown {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+    z-index: 1000;
+}
+
+.action-dropdown.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.action-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-option:hover {
+    background-color: var(--secondary-color);
+}
+
+.action-option svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--primary-color);
+}
+
+.action-option span {
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* File input styling */
+.hidden-input {
+    display: none;
+}
+
+/* Recording indicator */
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.recording-indicator::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #ff4444;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

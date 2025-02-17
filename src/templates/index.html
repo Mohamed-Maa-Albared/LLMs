@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mo's Personal Assistant</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS File -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Anime.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Marked.js Library for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h2>Conversations</h2>
+            <button id="new-conversation-btn">New Conversation</button>
+            <ul id="conversation-list"></ul>
+            <div id="delete-popup" class="popup">
+                <p>Delete this conversation?</p>
+                <div class="popup-actions">
+                    <button id="cancel-popup" class="popup-button cancel">Cancel</button>
+                    <button id="confirm-popup" class="popup-button danger">Delete</button>
+                </div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <h1>Mo's Personal Assistant</h1>
+            <ul id="conversation-history"></ul>
+            <form id="prompt-form">
+                <div class="multi-action-container">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+                <textarea id="prompt" name="prompt" placeholder="Ask LLaMA something..." required></textarea>
+                <button type="submit">Send</button>
+            </form>
+            <!-- Settings Shelf -->
+            <div id="settings-shelf">
+                <img src="static/assets/settings.png" alt="Settings" id="settings-icon">
+                <div id="settings-content">
+                    <h2>Settings</h2>
+                    <button id="dark-mode-toggle">Dark Mode</button>
+                    <hr>
+                    <div class="mode-slider">
+                        <span>Precise</span>
+                        <label class="switch">
+                            <input type="checkbox" id="mode-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span>Creative</span>
+                    </div>
+                    <hr>
+                    <div class="checkbox-container">
+                        <label for="include-history">
+                            <input type="checkbox" id="include-history" checked>
+                            Include conversation history
+                        </label>
+                    </div>
+                    <hr>
+                    <div class="model-selector">
+                        <label for="model-select">Select Model:</label>
+                        <select id="model-select">
+                            <!-- Options will be dynamically inserted here -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript File -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

@@ -1,43 +1,49 @@
-Ollama API Client
-=====================
+**Ollama API App**
+=====================================
 
-This is a Python script that serves as a client to interact with the Ollama API. It allows you to generate responses from various AI models using the generate_response method.
+**Table of Contents**
+-------------------
 
-Installation
-To run this app, you'll need to install the necessary libraries. You can do this by running:
+- [**Ollama API App**](#ollama-api-app)
+  - [**Table of Contents**](#table-of-contents)
+  - [Introduction](#introduction)
+    - [API Endpoints](#api-endpoints)
+  - [GET /api/models](#get-apimodels)
+    - [Endpoint: /api/models](#endpoint-apimodels)
+  - [POST /api/generate](#post-apigenerate)
+    - [Request Body:](#request-body)
+  - [Method: POST](#method-post)
+    - [Endpoint: /api/generate](#endpoint-apigenerate)
+  - [Static Files](#static-files)
 
-pip install requests
-Running the App
-Once installed, you can run the app by executing:
+## Introduction
+This is a Flask web application that interacts with the Ollama API. It allows users to fetch available models and generate responses based on prompts.
 
-python ollama_api.py
-The script will start a client that connects to the Ollama API at http://localhost:11434/api/generate. You can use this client to generate responses from various AI models.
+- [API Endpoints](#api-endpoints)
 
-Using the Client
-To use the client, you'll need to import the OllamaAPI class and create an instance of it. Then, you can call the generate_response method with your prompt and model of choice.
+### API Endpoints
 
-Here's an example:
+## GET /api/models
+Fetches available models from the Ollama API.
 
-from ollama_api import OllamaAPI
+### Endpoint: /api/models
 
-api = OllamaAPI()
-response = api.generate_response("Hello, how are you?", "llama3.1:70b")
-print(response)
-Endpoints
-This client has one endpoint:
+## POST /api/generate
+Generates a response based on a prompt and model.
 
-/api/generate
-: Accepts a JSON payload with the following properties:
-prompt
-: The text prompt to generate a response for.
-model
-: The AI model to use (default is
-llama3.1:70b
-). You can find more information about available models in the Ollama API documentation.
-Error Handling
-The client will return error messages as JSON responses if there's an issue generating a response or processing the request. Common errors include:
+### Request Body:
+* `prompt`: The text to generate a response for.
+* `model`: The model to use (default: dolphin-mixtral).
+* `temperature`: The temperature of the generated response (default: 0.7).
 
-"error": "Prompt is required"
-: No prompt was provided.
-"error": "Failed to generate response"
-: An unexpected error occurred while generating the response.
+## Method: POST
+
+### Endpoint: /api/generate
+
+- [Static Files](#static-files)
+
+## Static Files
+Serves static files such as CSS and JavaScript.
+
+- [Method: GET](#method-get)
+- [Method: POST](#method-post)
